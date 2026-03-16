@@ -125,7 +125,7 @@ export default function TechnicianDashboardPage() {
                     </Button>
                   </Link>
                   <DropdownMenu>
-                    <DropdownMenuTrigger className="outline-none">
+                    <DropdownMenuTrigger asChild className="outline-none">
                       <Button size="sm" className="h-8 text-xs font-medium shadow-sm">
                         Update
                       </Button>
