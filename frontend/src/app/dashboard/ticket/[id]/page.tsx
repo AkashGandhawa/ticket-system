@@ -292,7 +292,7 @@ export default function TicketDetailsPage() {
               <CardTitle className="text-base flex items-center justify-between">
                 Ticket Information
                 <DropdownMenu>
-                  <DropdownMenuTrigger className="outline-none">
+                  <DropdownMenuTrigger asChild className="outline-none">
                     <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400">
                       <MoreVertical className="w-4 h-4" />
                     </Button>
