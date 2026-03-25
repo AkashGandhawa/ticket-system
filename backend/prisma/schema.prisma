@@ -79,6 +79,7 @@ model Ticket {
 
   // Relationships
   messages    Message[]
+  attachments Attachment[]
 }
 
 model Message {
@@ -93,4 +94,21 @@ model Message {
   
   senderId  String?
   sender    User?    @relation(fields: [senderId], references: [id])
+
+  // Relationships
+  attachments Attachment[]
+}
+
+model Attachment {
+  id        String   @id @default(uuid())
+  name      String
+  size      Int
+  type      String
+  url       String
+  
+  messageId String?
+  message   Message? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  ticketId  String?
+  ticket    Ticket?  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 }

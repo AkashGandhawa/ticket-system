@@ -23,6 +23,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { API_URL } from "@/lib/api";
 
 // --- Types ---
 type AdminTicket = {
@@ -45,21 +46,21 @@ type Technician = {
 // --- Sub-components ---
 function StatusBadge({ status }: { status: string }) {
   switch (status) {
-    case "OPEN":        return <Badge className="bg-blue-100/80 text-blue-700 border-blue-200">Open</Badge>;
-    case "ASSIGNED":    return <Badge className="bg-purple-100/80 text-purple-700 border-purple-200">Assigned</Badge>;
-    case "IN_PROGRESS": return <Badge className="bg-orange-100/80 text-orange-700 border-orange-200">In Progress</Badge>;
-    case "WAITING":     return <Badge className="bg-yellow-100/80 text-yellow-700 border-yellow-200">Waiting</Badge>;
-    case "RESOLVED":    return <Badge className="bg-green-100/80 text-green-700 border-green-200">Resolved</Badge>;
-    case "CLOSED":      return <Badge className="bg-gray-100 text-gray-700 border-gray-200">Closed</Badge>;
+    case "OPEN":        return <Badge className="bg-blue-100/80 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800/50">Open</Badge>;
+    case "ASSIGNED":    return <Badge className="bg-purple-100/80 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800/50">Assigned</Badge>;
+    case "IN_PROGRESS": return <Badge className="bg-orange-100/80 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800/50">In Progress</Badge>;
+    case "WAITING":     return <Badge className="bg-yellow-100/80 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800/50">Waiting</Badge>;
+    case "RESOLVED":    return <Badge className="bg-green-100/80 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800/50">Resolved</Badge>;
+    case "CLOSED":      return <Badge className="bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">Closed</Badge>;
     default:            return <Badge variant="outline">{status}</Badge>;
   }
 }
 
 function PriorityBadge({ priority }: { priority: string }) {
   switch (priority) {
-    case "HIGH":   return <span className="text-red-600 font-semibold text-xs flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-red-600" /> High</span>;
-    case "MEDIUM": return <span className="text-orange-500 font-semibold text-xs flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-orange-500" /> Med</span>;
-    default:       return <span className="text-gray-500 font-semibold text-xs flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-gray-400" /> Low</span>;
+    case "HIGH":   return <span className="text-red-600 dark:text-red-400 font-semibold text-xs flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-red-600 dark:bg-red-400" /> High</span>;
+    case "MEDIUM": return <span className="text-orange-500 dark:text-orange-400 font-semibold text-xs flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-orange-500 dark:bg-orange-400" /> Med</span>;
+    default:       return <span className="text-muted-foreground font-semibold text-xs flex items-center gap-1"><div className="h-1.5 w-1.5 rounded-full bg-slate-400 dark:bg-slate-500" /> Low</span>;
   }
 }
 
@@ -82,8 +83,8 @@ export default function AdminDashboardPage() {
     async function loadData() {
       try {
         const [ticketsRes, techsRes] = await Promise.all([
-          fetch("http://localhost:5000/api/tickets"),
-          fetch("http://localhost:5000/api/users/role/technician"),
+          fetch(`${API_URL}/api/tickets`),
+          fetch(`${API_URL}/api/users/role/technician`),
         ]);
         const [ticketsData, techsData] = await Promise.all([
           ticketsRes.json(), techsRes.json(),
@@ -109,7 +110,7 @@ export default function AdminDashboardPage() {
     setIsAssigning(true);
 
     try {
-      const res = await fetch(`http://localhost:5000/api/tickets/${assignDialog.ticketId}`, {
+      const res = await fetch(`${API_URL}/api/tickets/${assignDialog.ticketId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -153,18 +154,18 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Support Dashboard</h1>
-          <p className="text-gray-500 mt-1">Monitor and assign incoming faculty IT requests.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Support Dashboard</h1>
+          <p className="text-muted-foreground mt-1">Monitor and assign incoming faculty IT requests.</p>
         </div>
         <div className="flex gap-3">
           <Link href="/dashboard/admin/kanban">
-            <Button variant="outline" className="shadow-sm bg-white border-gray-200 text-gray-700 hover:bg-gray-50">
+            <Button variant="outline" className="shadow-sm border-border bg-card hover:bg-muted text-foreground transition-all">
               <LayoutDashboard className="mr-2 h-4 w-4" />
               Kanban View
             </Button>
           </Link>
           <Link href="/dashboard/create-ticket">
-            <Button className="shadow-sm">
+            <Button className="shadow-sm transition-all">
               <PlusCircle className="mr-2 h-4 w-4" />
               New Ticket
             </Button>
@@ -174,61 +175,61 @@ export default function AdminDashboardPage() {
 
       {/* Metric Cards — live counts from DB */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="shadow-sm border-gray-100">
+        <Card className="shadow-sm border-border bg-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Total Tickets</CardTitle>
-            <Ticket className="h-4 w-4 text-blue-600" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Tickets</CardTitle>
+            <Ticket className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{tickets.length}</div>
-            <p className="text-xs text-blue-600 font-medium mt-1">All time</p>
+            <div className="text-2xl font-bold text-foreground">{tickets.length}</div>
+            <p className="text-xs text-blue-500 font-medium mt-1">All time</p>
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-gray-100">
+        <Card className="shadow-sm border-border bg-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Open Tickets</CardTitle>
-            <LayoutDashboard className="h-4 w-4 text-gray-400" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Open Tickets</CardTitle>
+            <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{openCount}</div>
-            <p className="text-xs text-gray-500 mt-1">Needs assignment</p>
+            <div className="text-2xl font-bold text-foreground">{openCount}</div>
+            <p className="text-xs text-muted-foreground mt-1">Needs assignment</p>
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-gray-100">
+        <Card className="shadow-sm border-border bg-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">In Progress</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
             <Clock className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{inProgressCount}</div>
-            <p className="text-xs text-gray-500 mt-1">Being handled</p>
+            <div className="text-2xl font-bold text-foreground">{inProgressCount}</div>
+            <p className="text-xs text-muted-foreground mt-1">Being handled</p>
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-gray-100">
+        <Card className="shadow-sm border-border bg-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Resolved</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Resolved</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{resolvedCount}</div>
-            <p className="text-xs text-green-600 font-medium mt-1">All time</p>
+            <div className="text-2xl font-bold text-foreground">{resolvedCount}</div>
+            <p className="text-xs text-green-500 font-medium mt-1">All time</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Ticket Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <h2 className="font-semibold text-lg text-gray-800">All Tickets</h2>
+      <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden transition-all duration-300">
+        <div className="p-4 border-b border-border bg-muted/30 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <h2 className="font-semibold text-lg text-foreground">All Tickets</h2>
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search by title or user..."
-              className="pl-9 h-9 bg-white border-gray-200 focus-visible:ring-primary/20 text-sm"
+              className="pl-9 h-9 bg-background border-border focus-visible:ring-primary/20 text-sm transition-all"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -237,15 +238,15 @@ export default function AdminDashboardPage() {
 
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50/30 hover:bg-gray-50/30">
-              <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500 w-24">ID</TableHead>
-              <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500">User</TableHead>
-              <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500">Issue</TableHead>
-              <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500">Category</TableHead>
-              <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500">Priority</TableHead>
-              <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500">Status</TableHead>
-              <TableHead className="font-semibold text-xs uppercase tracking-wider text-gray-500">Assigned To</TableHead>
-              <TableHead className="text-right font-semibold text-xs uppercase tracking-wider text-gray-500">Actions</TableHead>
+            <TableRow className="bg-muted/40 hover:bg-muted/40 border-border">
+              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground w-24">ID</TableHead>
+              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">User</TableHead>
+              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Issue</TableHead>
+              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Category</TableHead>
+              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Priority</TableHead>
+              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Status</TableHead>
+              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Assigned To</TableHead>
+              <TableHead className="text-right font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -256,37 +257,35 @@ export default function AdminDashboardPage() {
                 </TableCell>
               </TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-gray-500">No tickets found.</TableCell>
+              <TableRow className="border-border">
+                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">No tickets found.</TableCell>
               </TableRow>
             ) : (
               filtered.map((ticket) => (
-                <TableRow key={ticket.id} className="hover:bg-blue-50/30 transition-colors">
+                <TableRow key={ticket.id} className="hover:bg-primary/5 transition-colors border-border group">
                   <TableCell className="font-mono font-medium text-primary text-xs">{ticket.id.slice(0, 8)}</TableCell>
                   <TableCell className="text-sm">
                     <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-[10px] bg-gray-100 text-gray-600">
+                       <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0 border border-border">
                           {ticket.author?.name?.charAt(0) ?? "?"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-gray-600 truncate max-w-[120px]" title={ticket.author?.email}>
+                       </div>
+                      <span className="text-muted-foreground truncate max-w-[120px]" title={ticket.author?.email}>
                         {ticket.author?.email}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="font-medium text-gray-900 text-sm max-w-[250px] truncate">{ticket.title}</TableCell>
-                  <TableCell className="text-sm text-gray-500">{ticket.category?.name || "—"}</TableCell>
+                  <TableCell className="font-medium text-foreground text-sm max-w-[250px] truncate">{ticket.title}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{ticket.category?.name || "—"}</TableCell>
                   <TableCell><PriorityBadge priority={ticket.priority} /></TableCell>
                   <TableCell><StatusBadge status={ticket.status} /></TableCell>
                   <TableCell className="text-sm">
                     {ticket.assignedTo ? (
-                      <span className="flex items-center gap-1.5 text-gray-700 font-medium">
-                        <UserCheck className="h-3.5 w-3.5 text-green-600" />
+                      <span className="flex items-center gap-1.5 text-foreground font-medium">
+                        <UserCheck className="h-3.5 w-3.5 text-green-500" />
                         {ticket.assignedTo.name}
                       </span>
                     ) : (
-                      <span className="text-gray-400 italic">Unassigned</span>
+                      <span className="text-muted-foreground italic">Unassigned</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
@@ -296,19 +295,19 @@ export default function AdminDashboardPage() {
                           Manage
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-52">
-                        <DropdownMenuLabel>Ticket Actions</DropdownMenuLabel>
+                      <DropdownMenuContent align="end" className="w-52 rounded-xl shadow-xl">
+                        <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Ticket Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          className="cursor-pointer gap-2"
+                          className="cursor-pointer gap-2 font-medium"
                           onClick={() => openAssignDialog(ticket)}
                         >
                           <UserCheck className="h-4 w-4 text-primary" />
                           Assign Technician
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/ticket/${ticket.id}`} className="cursor-pointer text-blue-600 font-medium">
+                        <DropdownMenuItem className="p-0">
+                          <Link href={`/dashboard/ticket/${ticket.id}`} className="cursor-pointer text-primary font-bold w-full px-2 py-1.5 flex items-center">
                             View Full Details
                           </Link>
                         </DropdownMenuItem>
@@ -330,25 +329,25 @@ export default function AdminDashboardPage() {
               <UserCheck className="h-5 w-5 text-primary" />
               Assign Technician
             </DialogTitle>
-            <DialogDescription className="text-sm text-gray-500 pt-1 line-clamp-2">
-              <span className="font-medium text-gray-700">Ticket:</span> {assignDialog.ticketTitle}
+            <DialogDescription className="text-sm text-muted-foreground pt-1 line-clamp-2">
+              <span className="font-medium text-foreground">Ticket:</span> {assignDialog.ticketTitle}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <Select value={selectedTechId} onValueChange={setSelectedTechId}>
+            <Select value={selectedTechId} onValueChange={(val) => setSelectedTechId(val || "")}>
               <SelectTrigger className="h-11">
                 <SelectValue placeholder="Select a technician..." />
               </SelectTrigger>
               <SelectContent>
                 {technicians.length === 0 ? (
-                  <div className="p-4 text-sm text-gray-400 text-center">No technicians found in database.</div>
+                  <div className="p-4 text-sm text-muted-foreground text-center">No technicians found in database.</div>
                 ) : (
                   technicians.map((tech) => (
                     <SelectItem key={tech.id} value={tech.id}>
                       <div className="flex flex-col">
-                        <span className="font-medium">{tech.name}</span>
-                        <span className="text-xs text-gray-400">{tech.email}</span>
+                        <span className="font-medium text-foreground">{tech.name}</span>
+                        <span className="text-xs text-muted-foreground">{tech.email}</span>
                       </div>
                     </SelectItem>
                   ))

@@ -1,0 +1,202 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { 
+  User, 
+  Mail, 
+  Bell, 
+  Shield, 
+  Smartphone,
+  CheckCircle2,
+  Loader2,
+  Trash2
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export default function SettingsPage() {
+  const { user } = useAuth();
+  const [isSaving, setIsSaving] = useState(false);
+  const [name, setName] = useState(user?.name ?? "");
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [notifications, setNotifications] = useState({
+    tickets: true,
+    system: false
+  });
+
+  // Sync with user data when it loads
+  useEffect(() => {
+    if (user?.name) setName(user.name);
+    if (user?.email) setEmail(user.email);
+  }, [user]);
+
+  const handleSave = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+    }, 1000);
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Account Settings</h1>
+        <p className="text-muted-foreground mt-1">Manage your profile, security, and notification preferences.</p>
+      </div>
+
+      <div className="grid gap-6">
+        {/* Profile Section */}
+        <section className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden text-foreground">
+          <div className="p-6 border-b border-border bg-muted/20">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <User className="h-5 w-5 text-primary" />
+              Profile Information
+            </h2>
+          </div>
+          <div className="p-6 space-y-6">
+            <div className="flex items-center gap-6 pb-2">
+                <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold border-2 border-primary/20">
+                    {user?.name?.[0].toUpperCase() ?? "?"}
+                </div>
+                <div>
+                    <h3 className="font-semibold text-foreground">{user?.name}</h3>
+                    <p className="text-sm text-muted-foreground">{user?.email}</p>
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-primary mt-1">{user?.role} ACCOUNT</p>
+                </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Full Name</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    value={name} 
+                    onChange={(e) => setName(e.target.value)}
+                    className="pl-9 h-10 rounded-xl bg-muted/30 border-border focus:ring-primary/20" 
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    value={email} 
+                    className="pl-9 h-10 rounded-xl bg-muted/10 border-border opacity-70" 
+                    disabled 
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="pt-2">
+              <Button onClick={handleSave} disabled={isSaving} className="rounded-xl px-6">
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Security Section */}
+        <section className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden text-foreground">
+          <div className="p-6 border-b border-border bg-muted/20">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              Security & Privacy
+            </h2>
+          </div>
+          <div className="p-6 divide-y divide-border/50">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-4">
+              <div>
+                <p className="font-bold text-foreground">Login Password</p>
+                <p className="text-sm text-muted-foreground">Change your account password regularly to keep it secure.</p>
+              </div>
+              <Button variant="outline" className="rounded-xl px-6">Update Password</Button>
+            </div>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-4">
+              <div>
+                <p className="font-bold text-foreground">Two-Factor Authentication</p>
+                <p className="text-sm text-muted-foreground">Add an extra layer of security to your account.</p>
+              </div>
+              <Button variant="outline" className="gap-2 rounded-xl px-6">
+                <Smartphone className="h-4 w-4" />
+                Enable 2FA
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Notifications Section */}
+        <section className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden text-foreground">
+          <div className="p-6 border-b border-border bg-muted/20">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Bell className="h-5 w-5 text-primary" />
+              Notification Preferences
+            </h2>
+          </div>
+          <div className="p-6 space-y-6">
+             <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-foreground">Ticket Updates</p>
+                  <p className="text-sm text-muted-foreground">Receive emails when your tickets are updated or commented on.</p>
+                </div>
+                <button 
+                    onClick={() => setNotifications(prev => ({...prev, tickets: !prev.tickets}))}
+                    className={cn(
+                        "h-6 w-11 rounded-full relative transition-colors duration-200 outline-none",
+                        notifications.tickets ? "bg-primary" : "bg-muted"
+                    )}
+                >
+                  <div className={cn(
+                      "absolute top-1 h-4 w-4 bg-white rounded-full shadow-sm transition-all duration-200",
+                      notifications.tickets ? "right-1" : "left-1"
+                  )} />
+                </button>
+             </div>
+             <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-foreground">System Announcements</p>
+                  <p className="text-sm text-muted-foreground">Receive notifications about system maintenance and new features.</p>
+                </div>
+                <button 
+                    onClick={() => setNotifications(prev => ({...prev, system: !prev.system}))}
+                    className={cn(
+                        "h-6 w-11 rounded-full relative transition-colors duration-200 outline-none",
+                        notifications.system ? "bg-primary" : "bg-muted"
+                    )}
+                >
+                  <div className={cn(
+                      "absolute top-1 h-4 w-4 bg-white rounded-full shadow-sm transition-all duration-200",
+                      notifications.system ? "right-1" : "left-1"
+                  )} />
+                </button>
+             </div>
+          </div>
+        </section>
+
+        {/* Danger Zone */}
+        <section className="bg-red-50/30 dark:bg-red-950/10 rounded-2xl border border-red-200/50 dark:border-red-900/50 overflow-hidden text-foreground">
+          <div className="p-6 border-b border-red-200/50 dark:border-red-900/50">
+            <h2 className="text-lg font-semibold flex items-center gap-2 text-red-600 dark:text-red-400">
+              <Trash2 className="h-5 w-5" />
+              Danger Zone
+            </h2>
+          </div>
+          <div className="p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <p className="font-bold text-red-600 dark:text-red-400">Delete Account</p>
+                <p className="text-sm text-muted-foreground">Permanently remove your account and all associated data.</p>
+              </div>
+              <Button variant="destructive" className="rounded-xl px-6 bg-red-600 hover:bg-red-700">Delete Permanently</Button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+

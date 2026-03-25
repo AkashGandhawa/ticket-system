@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, UploadCloud, Info, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowLeft, UploadCloud, Info, CheckCircle2, Loader2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/context/AuthContext";
+import { API_URL } from "@/lib/api";
 
 type Category = { id: string; name: string };
 
@@ -34,14 +35,63 @@ export default function CreateTicketPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [pendingFiles, setPendingFiles] = useState<any[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load categories from DB on mount
   useEffect(() => {
-    fetch("http://localhost:5000/api/categories")
+    fetch(`${API_URL}/api/categories`)
       .then((res) => res.json())
       .then(setCategories)
       .catch(() => setError("Could not load categories. Is the backend running?"));
   }, []);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    for (const f of files) {
+      const tempId = crypto.randomUUID();
+      const newFile = {
+        id: tempId,
+        name: f.name,
+        size: f.size,
+        type: f.type,
+        uploading: true,
+      };
+
+      setPendingFiles((prev) => [...prev, newFile]);
+
+      try {
+        const formData = new FormData();
+        formData.append("file", f);
+
+        const res = await fetch(`${API_URL}/api/uploads`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || "Upload failed");
+        }
+
+        const data = await res.json();
+        setPendingFiles((prev) =>
+          prev.map((p) => p.id === tempId ? { ...data, uploading: false } : p)
+        );
+      } catch (err) {
+        setPendingFiles((prev) =>
+          prev.map((p) => p.id === tempId ? { ...p, uploading: false, error: "Failed" } : p)
+        );
+      }
+    }
+    // Clear input
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeFile = (id: string) => {
+    setPendingFiles((prev) => prev.filter((f) => f.id !== id));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +110,7 @@ export default function CreateTicketPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/tickets", {
+      const response = await fetch(`${API_URL}/api/tickets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -71,6 +121,12 @@ export default function CreateTicketPage() {
           location: location || undefined,
           device: device || undefined,
           authorId: user.id,
+          attachments: pendingFiles.filter(f => !f.uploading && !f.error).map(f => ({
+            name: f.name,
+            size: f.size,
+            type: f.type,
+            url: f.url
+          }))
         }),
       });
 
@@ -92,11 +148,11 @@ export default function CreateTicketPage() {
   if (isSuccess) {
     return (
       <div className="max-w-3xl mx-auto flex flex-col items-center justify-center text-center py-24 space-y-4">
-        <div className="bg-green-100 p-5 rounded-full">
-          <CheckCircle2 className="h-12 w-12 text-green-600" />
+        <div className="bg-green-100 dark:bg-green-900/30 p-5 rounded-full">
+          <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">Ticket Submitted!</h2>
-        <p className="text-gray-500 max-w-sm">Your ticket has been saved to the database and assigned a tracking ID. Redirecting to your dashboard...</p>
+        <h2 className="text-2xl font-bold text-foreground">Ticket Submitted!</h2>
+        <p className="text-muted-foreground max-w-sm">Your ticket has been saved to the database and assigned a tracking ID. Redirecting to your dashboard...</p>
         <Loader2 className="h-5 w-5 animate-spin text-primary mt-2" />
       </div>
     );
@@ -106,13 +162,13 @@ export default function CreateTicketPage() {
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/dashboard">
-          <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border-gray-200">
-            <ArrowLeft className="h-4 w-4 text-gray-600" />
+          <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border-border">
+            <ArrowLeft className="h-4 w-4 text-muted-foreground" />
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Create New Ticket</h1>
-          <p className="text-sm text-gray-500">Submit a technical issue to the IT Help Desk.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Create New Ticket</h1>
+          <p className="text-sm text-muted-foreground">Submit a technical issue to the IT Help Desk.</p>
         </div>
       </div>
 
@@ -123,11 +179,11 @@ export default function CreateTicketPage() {
       )}
 
       <form onSubmit={handleSubmit}>
-        <Card className="shadow-md border-gray-100/50">
-          <CardHeader className="bg-gray-50/50 border-b pb-6">
+        <Card className="shadow-md border-border">
+          <CardHeader className="bg-muted/40 border-b pb-6">
             <div className="flex justify-between items-start">
               <div>
-                <CardTitle className="text-xl text-gray-900">Issue Details</CardTitle>
+                <CardTitle className="text-xl text-foreground">Issue Details</CardTitle>
                 <CardDescription className="mt-1">
                   Please provide as much information as possible to help us resolve your issue quickly.
                 </CardDescription>
@@ -143,21 +199,21 @@ export default function CreateTicketPage() {
             {/* Row 1: Title & Category */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="title" className="font-semibold text-gray-700">Issue Title <span className="text-red-500">*</span></Label>
+                <Label htmlFor="title" className="font-semibold text-foreground/90">Issue Title <span className="text-red-500">*</span></Label>
                 <Input
                   id="title"
                   placeholder="e.g., WiFi disconnected in library"
                   required
-                  className="h-11 bg-gray-50/50 border-gray-200 focus-visible:ring-primary/20"
+                  className="h-11 bg-muted/40 border-border focus-visible:ring-primary/20"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="category" className="font-semibold text-gray-700">Category <span className="text-red-500">*</span></Label>
-                <Select onValueChange={setCategoryId} value={categoryId}>
-                  <SelectTrigger className="h-11 bg-gray-50/50 border-gray-200">
+                <Label htmlFor="category" className="font-semibold text-foreground/90">Category <span className="text-red-500">*</span></Label>
+                <Select onValueChange={(val) => setCategoryId(val || "")} value={categoryId}>
+                  <SelectTrigger className="h-11 bg-muted/40 border-border">
                     <SelectValue placeholder={categories.length === 0 ? "Loading categories..." : "Select a category"} />
                   </SelectTrigger>
                   <SelectContent>
@@ -174,20 +230,20 @@ export default function CreateTicketPage() {
             {/* Row 2: Location & Priority */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="location" className="font-semibold text-gray-700">Location (Optional)</Label>
+                <Label htmlFor="location" className="font-semibold text-foreground/90">Location (Optional)</Label>
                 <Input
                   id="location"
                   placeholder="e.g., Lab 2, Building A"
-                  className="h-11 bg-gray-50/50 border-gray-200 focus-visible:ring-primary/20"
+                  className="h-11 bg-muted/40 border-border focus-visible:ring-primary/20"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="priority" className="font-semibold text-gray-700">Priority Level <span className="text-red-500">*</span></Label>
-                <Select value={priority} onValueChange={setPriority}>
-                  <SelectTrigger className="h-11 bg-gray-50/50 border-gray-200">
+                <Label htmlFor="priority" className="font-semibold text-foreground/90">Priority Level <span className="text-red-500">*</span></Label>
+                <Select value={priority} onValueChange={(val) => setPriority(val || "LOW")}>
+                  <SelectTrigger className="h-11 bg-muted/40 border-border">
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
                   <SelectContent>
@@ -200,11 +256,11 @@ export default function CreateTicketPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="device" className="font-semibold text-gray-700">Device Type (Optional)</Label>
+              <Label htmlFor="device" className="font-semibold text-foreground/90">Device Type (Optional)</Label>
               <Input
                 id="device"
                 placeholder="e.g., MacBook Pro, Lab PC #12"
-                className="h-11 bg-gray-50/50 border-gray-200 focus-visible:ring-primary/20"
+                className="h-11 bg-muted/40 border-border focus-visible:ring-primary/20"
                 value={device}
                 onChange={(e) => setDevice(e.target.value)}
               />
@@ -212,32 +268,67 @@ export default function CreateTicketPage() {
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description" className="font-semibold text-gray-700">Detailed Description <span className="text-red-500">*</span></Label>
+              <Label htmlFor="description" className="font-semibold text-foreground/90">Detailed Description <span className="text-red-500">*</span></Label>
               <Textarea
                 id="description"
                 placeholder="Please describe exactly what happened, including any error messages you saw..."
-                className="min-h-[120px] bg-gray-50/50 border-gray-200 focus-visible:ring-primary/20 resize-y"
+                className="min-h-[120px] bg-muted/40 border-border focus-visible:ring-primary/20 resize-y"
                 required
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
 
-            {/* File Upload (UI only — backend file upload is out of scope) */}
+            {/* File Upload */}
             <div className="space-y-2 pt-2">
-              <Label className="font-semibold text-gray-700">Attachments (Optional)</Label>
-              <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-gray-50 transition-colors cursor-pointer group">
+              <Label className="font-semibold text-foreground/90">Attachments (Optional)</Label>
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                multiple
+                onChange={handleFileChange}
+              />
+              <div 
+                className="border-2 border-dashed border-border rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-muted/70 transition-colors cursor-pointer group"
+                onClick={() => fileInputRef.current?.click()}
+              >
                 <div className="bg-primary/5 p-3 rounded-full mb-3 group-hover:bg-primary/10 transition-colors">
                   <UploadCloud className="h-6 w-6 text-primary" />
                 </div>
-                <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>
-                <p className="text-xs text-gray-500 mt-1">PNG, JPG, PDF up to 10MB</p>
+                <p className="text-sm font-medium text-foreground/90">Click to upload or drag and drop</p>
+                <p className="text-xs text-muted-foreground mt-1">PNG, JPG, PDF up to 10MB</p>
               </div>
+
+              {pendingFiles.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                  {pendingFiles.map((file) => (
+                    <div key={file.id} className="flex items-center gap-3 bg-muted/40 border border-border rounded-lg p-3 relative group">
+                      <div className="bg-primary/10 p-2 rounded flex-shrink-0">
+                        <UploadCloud className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate text-foreground">{file.name}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {(file.size / 1024).toFixed(1)} KB • {file.uploading ? "Uploading..." : file.error ? "Failed" : "Ready"}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); removeFile(file.id); }}
+                        className="text-muted-foreground hover:text-destructive transition-colors p-1"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
           </CardContent>
 
-          <CardFooter className="bg-gray-50/50 border-t p-6 flex justify-end gap-3 rounded-b-xl">
+          <CardFooter className="bg-muted/40 border-t p-6 flex justify-end gap-3 rounded-b-xl">
             <Link href="/dashboard">
               <Button type="button" variant="outline" className="h-11 px-6 font-medium" disabled={isSubmitting}>
                 Cancel

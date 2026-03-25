@@ -12,6 +12,7 @@ router.get('/', async (req, res) => {
         category: true,
         author: { select: { id: true, name: true, email: true } },
         assignedTo: { select: { id: true, name: true } },
+        attachments: true,
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -27,7 +28,10 @@ router.get('/assigned/:id', async (req, res) => {
     const { id } = req.params;
     const tickets = await prisma.ticket.findMany({
       where: { assignedToId: id },
-      include: { category: true, author: { select: { name: true } } }
+      include: { 
+        category: true, 
+        author: { select: { id: true, name: true, email: true } } 
+      }
     });
     res.json(tickets);
   } catch (error) {
@@ -38,7 +42,7 @@ router.get('/assigned/:id', async (req, res) => {
 // Create a new ticket
 router.post('/', async (req, res) => {
   try {
-    const { title, description, categoryId, priority, location, device, authorId } = req.body;
+    const { title, description, categoryId, priority, location, device, authorId, attachments } = req.body;
     
     const newTicket = await prisma.ticket.create({
       data: {
@@ -48,7 +52,18 @@ router.post('/', async (req, res) => {
         priority: priority || 'LOW',
         location,
         device,
-        authorId
+        authorId,
+        attachments: {
+          create: attachments?.map((a: any) => ({
+            name: a.name,
+            size: a.size,
+            type: a.type,
+            url: a.url
+          })) || []
+        }
+      },
+      include: {
+        attachments: true
       }
     });
     res.status(201).json(newTicket);

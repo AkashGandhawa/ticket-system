@@ -12,6 +12,7 @@ router.get('/:ticketId', async (req, res) => {
       where: { ticketId },
       include: {
         sender: { select: { id: true, name: true, role: true } },
+        attachments: true,
       },
       orderBy: { createdAt: 'asc' },
     });

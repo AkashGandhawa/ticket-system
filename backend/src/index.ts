@@ -10,6 +10,8 @@ import userRoutes from './routes/users';
 import authRoutes from './routes/auth';
 import categoryRoutes from './routes/categories';
 import messageRoutes from './routes/messages';
+import uploadRoutes from './routes/uploads';
+import path from 'path';
 
 dotenv.config();
 
@@ -29,6 +31,7 @@ const io = new SocketIOServer(server, {
 // Middleware
 app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000' }));
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -36,6 +39,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/uploads', uploadRoutes);
 
 // Health Check
 app.get('/api/health', async (req, res) => {
@@ -63,6 +67,7 @@ io.on('connection', (socket) => {
     text: string;
     senderId: string;
     senderName: string;
+    attachments?: { name: string; size: number; type: string; url: string }[];
   }) => {
     try {
       // Persist message to PostgreSQL
@@ -71,9 +76,18 @@ io.on('connection', (socket) => {
           text: data.text,
           ticketId: data.ticketId,
           senderId: data.senderId,
+          attachments: {
+            create: data.attachments?.map(a => ({
+              name: a.name,
+              size: a.size,
+              type: a.type,
+              url: a.url
+            })) || []
+          }
         },
         include: {
           sender: { select: { id: true, name: true, role: true } },
+          attachments: true,
         },
       });
 
@@ -84,6 +98,7 @@ io.on('connection', (socket) => {
         createdAt: saved.createdAt,
         isSystem: saved.isSystem,
         sender: saved.sender,
+        attachments: saved.attachments,
       });
     } catch (error) {
       console.error('[Socket.io] Failed to save message:', error);

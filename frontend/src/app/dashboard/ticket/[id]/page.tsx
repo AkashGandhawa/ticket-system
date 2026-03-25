@@ -4,12 +4,13 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
-  ArrowLeft, Paperclip, Send, MoreVertical, MessageSquareText,
-  Loader2, Wifi, WifiOff, Sun, Moon, Bell, BellDot, X,
+  ArrowLeft, Paperclip, Send, MessageSquareText,
+  Loader2, Wifi, WifiOff, X,
   FileText, Image as ImageIcon, File, CheckCircle2, Clock3,
-  ChevronRight, Upload, AlertCircle, Trash2
+  ChevronRight, Upload, AlertCircle, Trash2, Settings, MoreVertical
 } from "lucide-react";
 import { io, Socket } from "socket.io-client";
+import { API_URL } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ type Message = {
 type TicketInfo = {
   id: string;
   title: string;
+  description: string;
   status: string;
   priority: string;
   location?: string | null;
@@ -42,14 +44,7 @@ type TicketInfo = {
   author?: { name: string; email: string };
   assignedTo?: { name: string } | null;
   createdAt: string;
-};
-
-type Notification = {
-  id: string;
-  text: string;
-  time: string;
-  read: boolean;
-  type: "message" | "status" | "assignment";
+  attachments?: UploadedFile[];
 };
 
 type UploadedFile = {
@@ -112,66 +107,6 @@ function StatusBadge({ status }: { status: string }) {
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${map[status] ?? "bg-slate-100 text-slate-600"}`}>
       {labels[status] ?? status}
     </span>
-  );
-}
-
-// ─── Notification Panel ───────────────────────────────────────────────────────
-
-function NotificationPanel({
-  notifications,
-  onClose,
-  onMarkRead,
-  onClearAll,
-}: {
-  notifications: Notification[];
-  onClose: () => void;
-  onMarkRead: (id: string) => void;
-  onClearAll: () => void;
-}) {
-  const typeIcon: Record<Notification["type"], string> = {
-    message: "💬", status: "🔄", assignment: "👤",
-  };
-
-  return (
-    <div className="absolute right-0 top-12 z-50 w-80 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden animate-in slide-in-from-top-2 duration-200">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Notifications</h3>
-        <div className="flex items-center gap-2">
-          <button onClick={onClearAll} className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-            Clear all
-          </button>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      <div className="max-h-72 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800">
-        {notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
-            <Bell className="w-6 h-6" />
-            <p className="text-xs">All caught up!</p>
-          </div>
-        ) : (
-          notifications.map((n) => (
-            <button
-              key={n.id}
-              onClick={() => onMarkRead(n.id)}
-              className={`w-full text-left px-4 py-3 flex gap-3 items-start transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 ${!n.read ? "bg-blue-50/50 dark:bg-blue-900/10" : ""}`}
-            >
-              <span className="text-base mt-0.5">{typeIcon[n.type]}</span>
-              <div className="flex-1 min-w-0">
-                <p className={`text-xs leading-relaxed ${!n.read ? "font-medium text-slate-800 dark:text-slate-100" : "text-slate-600 dark:text-slate-400"}`}>
-                  {n.text}
-                </p>
-                <p className="text-[10px] text-slate-400 mt-0.5">{n.time}</p>
-              </div>
-              {!n.read && <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5" />}
-            </button>
-          ))
-        )}
-      </div>
-    </div>
   );
 }
 
@@ -302,68 +237,17 @@ export default function TicketDetailsPage() {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // New features state
-  const [isDark, setIsDark] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [showNotifications, setShowNotifications] = useState(false);
+  // File handling state
   const [pendingFiles, setPendingFiles] = useState<UploadedFile[]>([]);
 
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const notifRef = useRef<HTMLDivElement>(null);
-
-  // Dark mode
-  useEffect(() => {
-    const stored = localStorage.getItem("theme");
-    const dark = stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    setIsDark(dark);
-    document.documentElement.classList.toggle("dark", dark);
-    document.body.style.backgroundColor = dark ? "#0a0f1e" : "";
-    document.body.style.colorScheme = dark ? "dark" : "light";
-  }, []);
-
-  const applyTheme = (dark: boolean) => {
-    document.documentElement.classList.toggle("dark", dark);
-    // Force background on body so parent layouts respond immediately
-    document.body.style.backgroundColor = dark ? "#0a0f1e" : "";
-    document.body.style.colorScheme = dark ? "dark" : "light";
-  };
-
-  const toggleDark = () => {
-    const next = !isDark;
-    setIsDark(next);
-    applyTheme(next);
-    localStorage.setItem("theme", next ? "dark" : "light");
-  };
-
-  // Close notifications on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
-        setShowNotifications(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
   // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  // Add notification helper
-  const addNotification = useCallback((text: string, type: Notification["type"]) => {
-    const notif: Notification = {
-      id: crypto.randomUUID(),
-      text,
-      time: "Just now",
-      read: false,
-      type,
-    };
-    setNotifications((prev) => [notif, ...prev].slice(0, 20));
-  }, []);
 
   // Fetch + socket
   useEffect(() => {
@@ -372,8 +256,8 @@ export default function TicketDetailsPage() {
     async function init() {
       try {
         const [ticketRes, messagesRes] = await Promise.all([
-          fetch(`http://localhost:5000/api/tickets`),
-          fetch(`http://localhost:5000/api/messages/${ticketId}`),
+          fetch(`${API_URL}/api/tickets`),
+          fetch(`${API_URL}/api/messages/${ticketId}`),
         ]);
         const [allTickets, msgs] = await Promise.all([ticketRes.json(), messagesRes.json()]);
         const found = allTickets.find((t: TicketInfo) => t.id === ticketId);
@@ -388,7 +272,7 @@ export default function TicketDetailsPage() {
 
     init();
 
-    const socket = io("http://localhost:5000", { transports: ["websocket"] });
+    const socket = io(API_URL, { transports: ["websocket"] });
     socketRef.current = socket;
 
     socket.on("connect", () => {
@@ -398,48 +282,59 @@ export default function TicketDetailsPage() {
 
     socket.on("disconnect", () => {
       setIsConnected(false);
-      addNotification("Connection lost. Reconnecting…", "status");
     });
 
     socket.on("receive_message", (msg: Message) => {
       setMessages((prev) => [...prev, msg]);
-      if (msg.sender?.id !== user?.id && !msg.isSystem) {
-        addNotification(`New message from ${msg.sender?.name ?? "Someone"}`, "message");
-      }
     });
 
     socket.on("ticket_status_update", (data: { status: string }) => {
       setTicket((prev) => prev ? { ...prev, status: data.status } : prev);
-      addNotification(`Ticket status changed to ${data.status.replace("_", " ")}`, "status");
-    });
-
-    socket.on("ticket_assigned", (data: { assigneeName: string }) => {
-      addNotification(`Ticket assigned to ${data.assigneeName}`, "assignment");
     });
 
     return () => { socket.disconnect(); };
-  }, [ticketId, user?.id, addNotification]);
+  }, [ticketId, user?.id]);
 
   // File handling
   const handleFiles = useCallback((files: File[]) => {
-    const newFiles: UploadedFile[] = files.map((f) => ({
-      id: crypto.randomUUID(),
-      name: f.name,
-      size: f.size,
-      type: f.type,
-      url: URL.createObjectURL(f),
-      uploading: true,
-    }));
+    files.forEach(async (f) => {
+      const tempId = crypto.randomUUID();
+      const newFile: UploadedFile = {
+        id: tempId,
+        name: f.name,
+        size: f.size,
+        type: f.type,
+        url: URL.createObjectURL(f),
+        uploading: true,
+      };
 
-    setPendingFiles((prev) => [...prev, ...newFiles]);
+      setPendingFiles((prev) => [...prev, newFile]);
 
-    // Simulate upload (replace with real upload logic)
-    newFiles.forEach((f) => {
-      setTimeout(() => {
+      try {
+        const formData = new FormData();
+        formData.append("file", f);
+
+        const res = await fetch(`${API_URL}/api/uploads`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || "Upload failed");
+        }
+
+        const data = await res.json();
+        
         setPendingFiles((prev) =>
-          prev.map((p) => p.id === f.id ? { ...p, uploading: false } : p)
+          prev.map((p) => p.id === tempId ? { ...data, uploading: false } : p)
         );
-      }, 1200 + Math.random() * 800);
+      } catch (err) {
+        console.error("Upload error:", err);
+        setPendingFiles((prev) =>
+          prev.map((p) => p.id === tempId ? { ...p, uploading: false, error: "Failed" } : p)
+        );
+      }
     });
   }, []);
 
@@ -470,7 +365,6 @@ export default function TicketDetailsPage() {
     setPendingFiles([]);
   };
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
   const currentStep = ticket ? STATUS_MAP[ticket.status] ?? 0 : 0;
 
   // ── Loading ──
@@ -500,11 +394,11 @@ export default function TicketDetailsPage() {
   const priorityConf = PRIORITY_CONFIG[ticket.priority] ?? PRIORITY_CONFIG.MEDIUM;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-5 px-1">
+    <div className="max-w-6xl mx-auto space-y-5 px-1 text-foreground">
 
       {/* ── Top Bar ── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 flex-1 min-w-[200px]">
           <Link href="/dashboard" className="mt-1">
             <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl border-slate-200 dark:border-slate-700 shrink-0">
               <ArrowLeft className="h-4 w-4" />
@@ -528,51 +422,15 @@ export default function TicketDetailsPage() {
           </div>
         </div>
 
-        {/* Controls */}
+        {/* Status indicator on the right */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Live indicator */}
-          <div className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all ${isConnected
-            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
-            : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+          <div className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold px-3 py-1 rounded-full border ${isConnected
+            ? "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/50"
+            : "bg-slate-50 text-slate-400 border-slate-200 dark:bg-slate-900 dark:text-slate-500 dark:border-slate-800"
             }`}>
-            {isConnected ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-            {isConnected ? "Live" : "Offline"}
+            <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? "bg-emerald-500 animate-pulse" : "bg-slate-300 dark:bg-slate-600"}`} />
+            {isConnected ? "Live Session" : "Offline"}
           </div>
-
-          {/* Notifications */}
-          <div className="relative" ref={notifRef}>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 rounded-xl border-slate-200 dark:border-slate-700 relative"
-              onClick={() => setShowNotifications((p) => !p)}
-            >
-              {unreadCount > 0 ? <BellDot className="w-4 h-4 text-blue-500" /> : <Bell className="w-4 h-4" />}
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-blue-500 text-white text-[9px] font-bold flex items-center justify-center">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
-              )}
-            </Button>
-            {showNotifications && (
-              <NotificationPanel
-                notifications={notifications}
-                onClose={() => setShowNotifications(false)}
-                onMarkRead={(id) => setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n))}
-                onClearAll={() => setNotifications([])}
-              />
-            )}
-          </div>
-
-          {/* Dark mode toggle */}
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8 rounded-xl border-slate-200 dark:border-slate-700"
-            onClick={toggleDark}
-          >
-            {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-500" />}
-          </Button>
         </div>
       </div>
 
@@ -638,6 +496,29 @@ export default function TicketDetailsPage() {
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/30 dark:bg-slate-900/30">
+              
+              {/* Ticket Description as the 'First Message' */}
+              <div className="bg-white dark:bg-slate-800 border bolder-slate-100 dark:border-slate-700 rounded-2xl p-4 shadow-sm mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <Avatar className="h-6 w-6 border border-slate-200 dark:border-slate-700">
+                    <AvatarFallback className="text-[10px] bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                      {ticket.author?.name?.split(" ").map(n => n[0]).join("") || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{ticket.author?.name}</span>
+                  <span className="text-[10px] text-slate-400 font-medium">started the ticket</span>
+                </div>
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                  {ticket.description}
+                </p>
+                {ticket.attachments && ticket.attachments.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50">
+                    <p className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-tight">Initial Attachments</p>
+                    <MessageAttachments files={ticket.attachments} />
+                  </div>
+                )}
+              </div>
+
               {messages.length === 0 && !isDragging && (
                 <div className="flex flex-col items-center justify-center h-full text-center gap-3 py-12">
                   <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">

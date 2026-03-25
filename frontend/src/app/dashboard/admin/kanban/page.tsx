@@ -8,6 +8,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { API_URL } from "@/lib/api";
 
 // Types — priority matches Prisma enum casing from the API
 type Ticket = {
@@ -60,7 +61,7 @@ export default function KanbanBoardPage() {
 
     async function fetchTickets() {
       try {
-        const res = await fetch("http://localhost:5000/api/tickets");
+        const res = await fetch(`${API_URL}/api/tickets`);
         const ticketsData = await res.json();
 
         const kanban = emptyKanban();
@@ -125,7 +126,7 @@ export default function KanbanBoardPage() {
     });
 
     // Also PATCH the backend to persist the new status
-    fetch(`http://localhost:5000/api/tickets/${draggableId}`, {
+    fetch(`${API_URL}/api/tickets/${draggableId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: destination.droppableId }),
