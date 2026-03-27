@@ -33,9 +33,9 @@ type KanbanData = {
 };
 
 function PriorityIndicator({ priority }: { priority: string }) {
-  if (priority === "HIGH") return <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full border border-red-100 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> High</span>;
-  if (priority === "MEDIUM") return <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100">Medium</span>;
-  return <span className="text-xs font-semibold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-200">Low</span>;
+  if (priority === "HIGH") return <span className="text-xs font-bold text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 px-2 py-0.5 rounded-full border border-red-100 dark:border-red-800/50 flex items-center gap-1"><AlertCircle className="w-3 h-3"/> High</span>;
+  if (priority === "MEDIUM") return <span className="text-xs font-bold text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400 px-2 py-0.5 rounded-full border border-orange-100 dark:border-orange-800/50">Medium</span>;
+  return <span className="text-xs font-semibold text-gray-500 bg-gray-50 dark:bg-slate-800 dark:text-slate-400 px-2 py-0.5 rounded-full border border-gray-200 dark:border-slate-700">Low</span>;
 }
 
 const emptyKanban = (): KanbanData => ({
@@ -136,17 +136,17 @@ export default function KanbanBoardPage() {
   if (!isMounted) return null;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)]">
+    <div className="flex flex-col h-[calc(100vh-100px)] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6 shrink-0">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4 shrink-0">
         <Link href="/dashboard/admin">
-          <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl border-slate-200 dark:border-slate-500 shrink-0 cursor-pointer">
-            <ArrowLeft className="h-4 w-4 text-slate-200" />
+          <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl border-border shrink-0 cursor-pointer">
+            <ArrowLeft className="h-4 w-4 text-foreground" />
           </Button>
         </Link>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">IT Help Desk Ticket Board</h1>
-          <p className="text-sm text-muted-foreground">Drag and drop tickets to the relevant category to update their status automatically.</p>
+        <div className="flex-1">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">IT Help Desk Ticket Board</h1>
+          <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-1">Drag and drop tickets to the relevant category to update their status.</p>
         </div>
       </div>
       {isLoading ? (
@@ -155,27 +155,27 @@ export default function KanbanBoardPage() {
         </div>
       ) : (
         /* Kanban Board Area */
-        <div className="flex-1 overflow-x-auto overflow-y-hidden pb-4">
+        <div className="flex-1 overflow-x-auto overflow-y-hidden pb-1 -mx-2 px-2 custom-scrollbar">
           <DragDropContext onDragEnd={onDragEnd}>
-            <div className="flex h-full gap-4 items-start min-w-max pb-4 px-1">
+            <div className="flex h-full gap-3 items-start min-w-max pb-4">
               {data.columnOrder.map((columnId) => {
                 const column = data.columns[columnId];
                 const tickets = column.ticketIds.map((tId) => data.tickets[tId]).filter(Boolean);
 
-                let headerColor = "bg-gray-200 text-gray-700";
-                if (columnId === "OPEN")        headerColor = "bg-blue-100 text-blue-700 border-b-2 border-blue-200";
-                if (columnId === "ASSIGNED")     headerColor = "bg-purple-100 text-purple-700 border-b-2 border-purple-200";
-                if (columnId === "IN_PROGRESS")  headerColor = "bg-orange-100 text-orange-700 border-b-2 border-orange-200";
-                if (columnId === "WAITING")      headerColor = "bg-yellow-100 text-yellow-700 border-b-2 border-yellow-200";
-                if (columnId === "RESOLVED")     headerColor = "bg-green-100 text-green-700 border-b-2 border-green-200";
-                if (columnId === "CLOSED")       headerColor = "bg-gray-100 text-gray-700 border-b-2 border-gray-200";
+                let headerColor = "bg-muted text-muted-foreground border-b border-border";
+                if (columnId === "OPEN")        headerColor = "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-b-2 border-blue-500/20";
+                if (columnId === "ASSIGNED")     headerColor = "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-b-2 border-purple-500/20";
+                if (columnId === "IN_PROGRESS")  headerColor = "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-b-2 border-orange-500/20";
+                if (columnId === "WAITING")      headerColor = "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-b-2 border-yellow-500/20";
+                if (columnId === "RESOLVED")     headerColor = "bg-green-500/10 text-green-600 dark:text-green-400 border-b-2 border-green-500/20";
+                if (columnId === "CLOSED")       headerColor = "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-b-2 border-slate-500/20";
 
                 return (
-                  <div key={column.id} className="flex flex-col w-80 h-full max-h-full bg-gray-50 rounded-xl border border-gray-200 shadow-sm overflow-hidden shrink-0">
+                  <div key={column.id} className="flex flex-col w-[260px] sm:w-[280px] h-full max-h-full bg-muted/40 dark:bg-card/20 rounded-xl border border-border shadow-sm overflow-hidden shrink-0 transition-all hover:bg-muted/50 dark:hover:bg-card/30">
                     {/* Column Header */}
-                    <div className={`p-3 flex justify-between items-center ${headerColor}`}>
-                      <h3 className="font-semibold text-sm tracking-wide uppercase">{column.title}</h3>
-                      <Badge variant="secondary" className="bg-white/60 text-current text-xs">{tickets.length}</Badge>
+                    <div className={`p-2.5 flex justify-between items-center ${headerColor} transition-colors`}>
+                      <h3 className="font-bold text-[10px] sm:text-xs tracking-wider uppercase">{column.title}</h3>
+                      <Badge variant="secondary" className="bg-background/40 text-current backdrop-blur-sm text-[9px] h-4 min-w-[18px] justify-center px-1">{tickets.length}</Badge>
                     </div>
 
                     {/* Column Droppable Area */}
@@ -185,7 +185,7 @@ export default function KanbanBoardPage() {
                           <div
                             ref={provided.innerRef}
                             {...provided.droppableProps}
-                            className={`min-h-[150px] transition-colors rounded-lg ${snapshot.isDraggingOver ? "bg-blue-50/50 outline-dashed outline-2 outline-blue-200 outline-offset-2" : ""}`}
+                            className={`min-h-[200px] flex-1 transition-colors rounded-lg flex flex-col gap-2.5 pb-20 ${snapshot.isDraggingOver ? "bg-primary/5 outline-dashed outline-2 outline-primary/20 outline-offset-1" : ""}`}
                           >
                             {tickets.map((ticket, index) => (
                               <Draggable key={ticket.id} draggableId={ticket.id} index={index}>
@@ -194,30 +194,30 @@ export default function KanbanBoardPage() {
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
                                     {...provided.dragHandleProps}
-                                    className={`mb-3 select-none bg-white p-4 rounded-lg border shadow-sm group hover:border-primary/50 transition-all
-                                      ${snapshot.isDragging ? "shadow-lg border-primary ring-2 ring-primary/20 opacity-90 scale-[1.02]" : "border-gray-200"}`}
+                                    className={`select-none bg-card p-3 sm:p-4 rounded-lg border shadow-sm group hover:border-primary/50 transition-all transform-gpu
+                                      ${snapshot.isDragging ? "shadow-2xl border-primary ring-4 ring-primary/10 opacity-95 scale-[1.04] z-50 cursor-grabbing" : "border-border hover:shadow-md active:scale-[0.98]"}`}
                                     style={provided.draggableProps.style}
                                   >
                                     <div className="flex justify-between items-start mb-2">
-                                      <span className="text-xs font-mono font-bold text-gray-500">{ticket.id.slice(0, 8)}</span>
+                                      <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase">{ticket.id.slice(0, 8)}</span>
                                       <div className="flex items-center gap-1">
                                         {ticket.assignedTo && (
-                                          <Avatar className="h-6 w-6 border border-gray-100 shadow-sm" title={`Assigned to ${ticket.assignedTo}`}>
+                                          <Avatar className="h-6 w-6 border border-border bg-muted" title={`Assigned to ${ticket.assignedTo}`}>
                                             <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
                                               {ticket.assignedTo.charAt(0)}
                                             </AvatarFallback>
                                           </Avatar>
                                         )}
-                                        <GripVertical className="h-4 w-4 text-gray-300 group-hover:text-gray-500 cursor-grab active:cursor-grabbing transition-colors" />
+                                        <GripVertical className="h-4 w-4 text-muted-foreground/30 group-hover:text-muted-foreground cursor-grab active:cursor-grabbing transition-colors" />
                                       </div>
                                     </div>
 
-                                    <p className="font-semibold text-gray-900 text-sm leading-tight mb-3 line-clamp-2">
+                                    <p className="font-bold text-foreground text-sm leading-tight mb-4 group-hover:text-primary transition-colors">
                                       {ticket.title}
                                     </p>
 
-                                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-50">
-                                      <span className="text-xs font-medium text-gray-500 px-2 py-0.5 bg-gray-100 rounded-md">
+                                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
+                                      <span className="text-[10px] font-bold text-muted-foreground px-2 py-0.5 bg-muted rounded-md uppercase tracking-wider">
                                         {ticket.category}
                                       </span>
                                       <PriorityIndicator priority={ticket.priority} />
