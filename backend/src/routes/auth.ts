@@ -47,4 +47,61 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Handle user registration
+router.post('/register', async (req, res) => {
+  try {
+    const { name, studentId, email, password } = req.body;
+ 
+    // Basic validation
+    if (!name || !studentId || !email || !password) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+ 
+    // Check if user already exists
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email },
+          { studentId }
+        ]
+      }
+    });
+ 
+    if (existingUser) {
+      return res.status(400).json({ error: 'User with this email or Student ID already exists' });
+    }
+ 
+    // Create new user
+    const user = await prisma.user.create({
+      data: {
+        name,
+        studentId,
+        email,
+        password, // In production use bcrypt.hash()
+        role: 'STUDENT', // Default role for registration
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        department: true,
+      }
+    });
+ 
+    // Mock session token
+    const mockToken = Buffer.from(`${user.id}:${user.role}`).toString('base64');
+ 
+    res.status(201).json({
+      message: 'Registration successful',
+      token: mockToken,
+      user
+    });
+ 
+  } catch (error) {
+    console.error('Registration error', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+ 
 export default router;

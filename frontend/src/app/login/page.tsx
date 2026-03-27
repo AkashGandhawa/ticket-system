@@ -117,7 +117,7 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <Link href="/forgot-password" className="text-sm font-medium text-primary hover:underline">
+                  <Link href="/forgot-password" title="Forgot password?" className="text-sm font-medium text-primary hover:underline">
                     Forgot password?
                   </Link>
                 </div>
@@ -141,6 +141,9 @@ export default function LoginPage() {
           <CardFooter className="flex flex-col border-t p-6 bg-muted/30 rounded-b-lg">
             <p className="text-xs text-center text-muted-foreground">
               Your role (Student, Technician, Admin) will be automatically detected upon login.
+            </p>
+            <p className="text-sm text-center mt-4">
+              Don't have an account? <Link href="/register" className="text-primary font-bold hover:underline">Register now</Link>
             </p>
           </CardFooter>
         </Card>

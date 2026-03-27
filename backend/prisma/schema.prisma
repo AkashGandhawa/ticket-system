@@ -34,6 +34,7 @@ enum Priority {
 model User {
   id               String    @id @default(uuid())
   email            String    @unique
+  studentId        String    @unique
   name             String
   password         String    // We'll store hashed password
   role             Role      @default(STUDENT)
