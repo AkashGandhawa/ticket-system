@@ -214,7 +214,11 @@ export default function CreateTicketPage() {
                 <Label htmlFor="category" className="font-semibold text-foreground/90">Category <span className="text-red-500">*</span></Label>
                 <Select onValueChange={(val) => setCategoryId(val || "")} value={categoryId}>
                   <SelectTrigger className="h-11 bg-muted/40 border-border">
-                    <SelectValue placeholder={categories.length === 0 ? "Loading categories..." : "Select a category"} />
+                    <div className="flex flex-1 text-left line-clamp-1">
+                      {categoryId 
+                        ? categories.find(c => c.id === categoryId)?.name 
+                        : (categories.length === 0 ? "Loading categories..." : "Select a category")}
+                    </div>
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((cat) => (
@@ -244,7 +248,12 @@ export default function CreateTicketPage() {
                 <Label htmlFor="priority" className="font-semibold text-foreground/90">Priority Level <span className="text-red-500">*</span></Label>
                 <Select value={priority} onValueChange={(val) => setPriority(val || "LOW")}>
                   <SelectTrigger className="h-11 bg-muted/40 border-border">
-                    <SelectValue placeholder="Select priority" />
+                    <div className="flex flex-1 text-left line-clamp-1">
+                      {priority === "LOW" ? "Low (Not urgent)" :
+                       priority === "MEDIUM" ? "Medium (Impacting work)" :
+                       priority === "HIGH" ? "High (Critical failure)" : 
+                       "Select priority"}
+                    </div>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="LOW">Low (Not urgent)</SelectItem>

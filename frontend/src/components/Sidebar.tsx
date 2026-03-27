@@ -115,19 +115,23 @@ const Sidebar = () => {
 
       <div className="p-4 border-t border-border mt-auto">
         <div className="bg-muted/40 rounded-xl p-2 flex items-center gap-2">
+            <Link href="/dashboard/settings" className="flex-1 flex items-center gap-3 p-1 rounded-lg hover:bg-muted transition-colors text-left outline-none cursor-pointer">
+              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold shrink-0 border border-primary/10">
+                {user?.name?.[0].toUpperCase() ?? "?"}
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <p className="text-xs font-semibold text-foreground truncate">{user?.name}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">{user?.role}</p>
+              </div>
+            </Link>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex-1 flex items-center gap-3 p-1 rounded-lg hover:bg-muted transition-colors text-left outline-none">
-                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold shrink-0 border border-primary/10">
-                    {user?.name?.[0].toUpperCase() ?? "?"}
-                  </div>
-                  <div className="flex-1 overflow-hidden">
-                    <p className="text-xs font-semibold text-foreground truncate">{user?.name}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">{user?.role}</p>
-                  </div>
-                </button>
+                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary outline-none focus-visible:ring-1">
+                  <Settings className="h-[1.2rem] w-[1.2rem]" />
+                </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 mb-2" align="start" side="right">
+              <DropdownMenuContent className="w-56 mb-2" align="end" side="top">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user?.name ?? "Guest"}</p>
@@ -136,14 +140,14 @@ const Sidebar = () => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="p-0">
-                  <Link href="/dashboard" className="flex items-center gap-2 w-full cursor-pointer px-2 py-1.5">
+                  <Link href="/dashboard/settings" className="flex items-center gap-2 w-full cursor-pointer px-2 py-1.5 outline-none hover:bg-accent hover:text-accent-foreground rounded-sm">
                     <User className="h-4 w-4" />
                     My Profile
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="cursor-pointer gap-2 text-red-500 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/10"
+                  className="cursor-pointer gap-2 text-red-500 hover:text-red-600 hover:bg-red-50 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/10 dark:hover:bg-red-900/10"
                   onClick={logout}
                 >
                   <LogOut className="h-4 w-4" />
@@ -151,12 +155,6 @@ const Sidebar = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <Link href="/dashboard/settings">
-              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary">
-                <Settings className="h-[1.2rem] w-[1.2rem]" />
-              </Button>
-            </Link>
         </div>
       </div>
     </aside>
