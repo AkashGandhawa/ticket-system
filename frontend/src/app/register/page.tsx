@@ -36,6 +36,18 @@ export default function RegisterPage() {
     setError("");
  
     // Basic validations
+    if (formData.name.trim().length < 2) {
+      setError("Name must be at least 2 characters long");
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      setIsLoading(false);
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
       setIsLoading(false);

@@ -16,14 +16,33 @@ import { useAuth } from "@/context/AuthContext";
 import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
 
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Loader2 } from "lucide-react";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, logout } = useAuth();
+  const { user, isLoading, logout } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push("/login");
+    }
+  }, [user, isLoading, router]);
+
+  // Show a loading spinner to prevent flash of content before redirecting
+  if (isLoading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   // Get initials from name
   const initials = user?.name

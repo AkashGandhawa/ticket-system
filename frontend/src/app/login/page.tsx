@@ -30,6 +30,12 @@ export default function LoginPage() {
       return;
     }
 
+    if (!email.includes("@")) {
+      setError("Please enter a valid email address.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
