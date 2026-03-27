@@ -66,6 +66,19 @@ router.post('/', async (req, res) => {
         attachments: true
       }
     });
+
+    // Notify Admins
+    const admins = await prisma.user.findMany({ where: { role: 'ADMIN', notifyTickets: true } });
+    if (admins.length > 0) {
+      await prisma.notification.createMany({
+        data: admins.map(admin => ({
+          userId: admin.id,
+          message: `New ticket created: ${title}`,
+          ticketId: newTicket.id
+        }))
+      });
+    }
+
     res.status(201).json(newTicket);
   } catch (error) {
     res.status(500).json({ error: 'Failed to create ticket', details: String(error) });
@@ -78,10 +91,38 @@ router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { status, assignedToId, priority } = req.body;
 
+    const existingTicket = await prisma.ticket.findUnique({ where: { id }, include: { author: true } });
+
     const updatedTicket = await prisma.ticket.update({
       where: { id },
       data: { status, assignedToId, priority },
     });
+
+    if (existingTicket) {
+      // Notify Tech on new assignment
+      if (assignedToId && existingTicket.assignedToId !== assignedToId) {
+        const tech = await prisma.user.findUnique({ where: { id: assignedToId } });
+        if (tech?.notifyTickets) {
+          await prisma.notification.create({
+            data: {
+              userId: tech.id,
+              message: `You were assigned to ticket: ${existingTicket.title}`,
+              ticketId: id
+            }
+          });
+        }
+      }
+      // Notify Student on status change
+      if (status && existingTicket.status !== status && existingTicket.author.notifyTickets) {
+        await prisma.notification.create({
+          data: {
+            userId: existingTicket.authorId,
+            message: `Your ticket status changed to ${status}`,
+            ticketId: id
+          }
+        });
+      }
+    }
 
     res.json(updatedTicket);
   } catch (error) {

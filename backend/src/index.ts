@@ -11,6 +11,7 @@ import authRoutes from './routes/auth';
 import categoryRoutes from './routes/categories';
 import messageRoutes from './routes/messages';
 import uploadRoutes from './routes/uploads';
+import notificationRoutes from './routes/notifications';
 import path from 'path';
 
 dotenv.config();
@@ -40,6 +41,7 @@ app.use('/api/tickets', ticketRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/uploads', uploadRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health Check
 app.get('/api/health', async (req, res) => {

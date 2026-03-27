@@ -10,6 +10,8 @@ export type User = {
   name: string;
   role: "STUDENT" | "ADMIN" | "TECHNICIAN";
   department?: string | null;
+  notifyTickets?: boolean;
+  notifySystem?: boolean;
 };
 
 type AuthContextType = {

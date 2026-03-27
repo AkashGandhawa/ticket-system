@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -17,13 +18,15 @@ async function main() {
   const catNetwork = await prisma.category.create({ data: { name: 'Network', description: 'WiFi, Ethernet, VPN issues' } });
   const catAccount = await prisma.category.create({ data: { name: 'Account', description: 'Login, SSO, Email access' } });
 
+  // Hash standard password for all seeded users
+  const hashedPassword = await bcrypt.hash('password123', 10);
+
   // 3. Seed Users (1 of each role)
-  // Note: Password usually should be hashed with bcrypt. Mocking for now.
   const studentUser = await prisma.user.create({
     data: {
       email: 'student@uni.edu',
       name: 'Sarah Smith',
-      password: 'password123',
+      password: hashedPassword,
       studentId: 'STU001',
       role: 'STUDENT',
       department: 'Computer Science',
@@ -34,7 +37,7 @@ async function main() {
     data: {
       email: 'tech@uni.edu',
       name: 'Tom Technician',
-      password: 'password123',
+      password: hashedPassword,
       studentId: 'TECH001',
       role: 'TECHNICIAN',
       department: 'IT Support',
@@ -45,7 +48,7 @@ async function main() {
     data: {
       email: 'admin@uni.edu',
       name: 'Alice Admin',
-      password: 'password123',
+      password: hashedPassword,
       studentId: 'ADMIN001',
       role: 'ADMIN',
       department: 'IT Management',

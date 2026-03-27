@@ -23,8 +23,8 @@ export default function SettingsPage() {
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [notifications, setNotifications] = useState({
-    tickets: true,
-    system: false
+    tickets: user?.notifyTickets ?? true,
+    system: user?.notifySystem ?? false
   });
 
   // Password state
@@ -37,24 +37,40 @@ export default function SettingsPage() {
   useEffect(() => {
     if (user?.name) setName(user.name);
     if (user?.email) setEmail(user.email);
+    if (user) {
+      setNotifications({
+        tickets: user.notifyTickets ?? true,
+        system: user.notifySystem ?? false
+      });
+    }
   }, [user]);
 
-  // Load notifications from local storage
-  useEffect(() => {
-    const saved = localStorage.getItem("helpdesk_notifications");
-    if (saved) {
-      try {
-        setNotifications(JSON.parse(saved));
-      } catch(e) {}
+  const handleNotificationChange = async (type: 'tickets' | 'system') => {
+    if (!user) return;
+    
+    const nextState = { ...notifications, [type]: !notifications[type] };
+    setNotifications(nextState); // Optimistic UI update
+    
+    try {
+      const res = await fetch(`${API_URL}/api/users/${user.id}/notifications`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          notifyTickets: nextState.tickets,
+          notifySystem: nextState.system
+        })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        updateUser({ notifyTickets: data.notifyTickets, notifySystem: data.notifySystem });
+      } else {
+        setNotifications(notifications); // Revert on error
+      }
+    } catch(e) {
+      console.error(e);
+      setNotifications(notifications); // Revert on error
     }
-  }, []);
-
-  const handleNotificationChange = (type: 'tickets' | 'system') => {
-    setNotifications(prev => {
-      const next = { ...prev, [type]: !prev[type] };
-      localStorage.setItem("helpdesk_notifications", JSON.stringify(next));
-      return next;
-    });
   };
 
   const handleSave = async () => {

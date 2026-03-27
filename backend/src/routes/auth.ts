@@ -25,6 +25,8 @@ router.post('/login', async (req, res) => {
         name: true,
         role: true,
         department: true,
+        notifyTickets: true,
+        notifySystem: true,
       }
     });
 
@@ -102,6 +104,8 @@ router.post('/register', async (req, res) => {
         name: true,
         role: true,
         department: true,
+        notifyTickets: true,
+        notifySystem: true,
       }
     });
  

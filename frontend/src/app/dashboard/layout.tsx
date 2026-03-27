@@ -15,6 +15,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
+import { NotificationsDropdown } from "@/components/NotificationsDropdown";
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -68,9 +69,7 @@ export default function DashboardLayout({
           
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-              <Bell className="h-5 w-5" />
-            </Button>
+            <NotificationsDropdown />
           </div>
         </header>
 

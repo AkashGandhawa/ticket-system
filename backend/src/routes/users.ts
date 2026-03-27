@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -88,15 +89,18 @@ router.put('/:id/password', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Unsecure check matching auth.ts
-    // In production we would use bcrypt.compare()
-    if (user.password !== currentPassword) {
+    // Compare provided password with securely hashed stored password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
       return res.status(401).json({ error: 'Incorrect current password' });
     }
 
+    // Hash the new password before updating
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
     await prisma.user.update({
       where: { id },
-      data: { password: newPassword } // In production use bcrypt.hash()
+      data: { password: hashedNewPassword }
     });
 
     res.json({ message: 'Password updated successfully' });
@@ -135,6 +139,24 @@ router.delete('/:id', async (req, res) => {
   } catch (error) {
     console.error('Delete user error:', error);
     res.status(500).json({ error: 'Failed to delete account' });
+  }
+});
+
+// Update user notifications
+router.put('/:id/notifications', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { notifyTickets, notifySystem } = req.body;
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: { notifyTickets, notifySystem },
+      select: { id: true, notifyTickets: true, notifySystem: true }
+    });
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update preferences' });
   }
 });
 

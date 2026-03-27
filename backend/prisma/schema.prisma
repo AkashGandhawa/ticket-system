@@ -39,6 +39,8 @@ model User {
   password         String    // We'll store hashed password
   role             Role      @default(STUDENT)
   department       String?
+  notifyTickets    Boolean   @default(true)
+  notifySystem     Boolean   @default(false)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -46,6 +48,7 @@ model User {
   ticketsCreated   Ticket[]  @relation("TicketAuthor")
   ticketsAssigned  Ticket[]  @relation("TicketAssignee")
   messagesSent     Message[]
+  notifications    Notification[]
 }
 
 model Category {
@@ -81,6 +84,7 @@ model Ticket {
   // Relationships
   messages    Message[]
   attachments Attachment[]
+  notifications Notification[]
 }
 
 model Message {
@@ -109,6 +113,20 @@ model Attachment {
   
   messageId String?
   message   Message? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  ticketId  String?
+  ticket    Ticket?  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Foreign Keys
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   ticketId  String?
   ticket    Ticket?  @relation(fields: [ticketId], references: [id], onDelete: Cascade)

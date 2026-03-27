@@ -21,7 +21,7 @@ import {
   DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger,
 } from "@/components/ui/select";
 import { API_URL } from "@/lib/api";
 
@@ -337,7 +337,11 @@ export default function AdminDashboardPage() {
           <div className="space-y-4 py-2">
             <Select value={selectedTechId} onValueChange={(val) => setSelectedTechId(val || "")}>
               <SelectTrigger className="h-11">
-                <SelectValue placeholder="Select a technician..." />
+                <div className="flex flex-1 text-left line-clamp-1">
+                  {selectedTechId 
+                    ? technicians.find(t => t.id === selectedTechId)?.name 
+                    : "Select a technician..."}
+                </div>
               </SelectTrigger>
               <SelectContent>
                 {technicians.length === 0 ? (
