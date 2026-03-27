@@ -41,6 +41,8 @@ model User {
   department       String?
   notifyTickets    Boolean   @default(true)
   notifySystem     Boolean   @default(false)
+  resetOtp         String?
+  resetOtpExpiry   DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
