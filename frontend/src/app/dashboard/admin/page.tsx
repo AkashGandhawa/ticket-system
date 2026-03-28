@@ -333,7 +333,10 @@ export default function AdminDashboardPage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="cursor-pointer gap-2 font-medium"
-                          onClick={() => openAssignDialog(ticket)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openAssignDialog(ticket);
+                          }}
                         >
                           <UserCheck className="h-4 w-4 text-primary" />
                           Assign Technician

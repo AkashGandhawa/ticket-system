@@ -228,20 +228,29 @@ export default function TechnicianDashboardPage() {
                       <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Change Status</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
-                        onClick={() => handleUpdateStatus(ticket.id, "IN_PROGRESS")}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUpdateStatus(ticket.id, "IN_PROGRESS");
+                        }}
                         className="cursor-pointer font-bold text-orange-600 dark:text-orange-400 focus:text-orange-700 focus:bg-orange-50 dark:focus:bg-orange-950/30"
                       >
                         <PlayCircle className="mr-2 h-4 w-4" /> Start Work
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => handleUpdateStatus(ticket.id, "WAITING")}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUpdateStatus(ticket.id, "WAITING");
+                        }}
                         className="cursor-pointer font-medium"
                       >
                         <Clock className="mr-2 h-4 w-4" /> Wait for User
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
-                        onClick={() => handleUpdateStatus(ticket.id, "RESOLVED")}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUpdateStatus(ticket.id, "RESOLVED");
+                        }}
                         className="cursor-pointer font-bold text-green-600 dark:text-green-400 focus:text-green-700 focus:bg-green-50 dark:focus:bg-green-950/30"
                       >
                         <CheckCircle2 className="mr-2 h-4 w-4" /> Mark Resolved
