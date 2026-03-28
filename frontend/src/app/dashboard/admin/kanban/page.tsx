@@ -66,7 +66,7 @@ export default function KanbanBoardPage() {
         const kanban = emptyKanban();
 
         if (Array.isArray(ticketsData)) {
-          ticketsData.forEach((t: any) => {
+          (ticketsData as any[]).forEach((t) => {
             kanban.tickets[t.id] = {
               id: t.id,
               title: t.title,

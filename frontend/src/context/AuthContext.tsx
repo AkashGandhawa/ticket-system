@@ -37,8 +37,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (storedToken && storedUser) {
       try {
         setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error("Failed to parse stored user", e);
+      } catch (_e) {
+        console.error("Failed to parse stored user", _e);
         localStorage.removeItem("helpdesk_token");
         localStorage.removeItem("helpdesk_user");
       }

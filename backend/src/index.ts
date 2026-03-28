@@ -21,20 +21,41 @@ const server = http.createServer(app);  // Wrap Express with http server for Soc
 const prisma = new PrismaClient();
 const port = process.env.PORT || 5000;
 
+// Middleware - Flexible CORS
+const allowedOrigins = process.env.FRONTEND_URL 
+  ? process.env.FRONTEND_URL.split(',').map(o => o.trim()) 
+  : [];
+
 // Initialize Socket.io
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL : true,
+    origin: (origin, callback) => {
+      // 1. Allow if no origin (like mobile apps/local scripts)
+      if (!origin) return callback(null, true);
+      // 2. Allow if origin is in explicit whitelist
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // 3. Allow all Vercel subdomains + localhost
+      if (origin.endsWith('.vercel.app') || origin === 'http://localhost:3000') {
+        return callback(null, true);
+      }
+      // 4. Deny otherwise
+      callback(new Error('Origin Not allowed by CORS'));
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true
   },
 });
 
-// Middleware
-// Allow all origins when testing or specifically process.env.FRONTEND_URL
 app.use(cors({ 
-  origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL : true,
-  credentials: true 
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app') || origin === 'http://localhost:3000') {
+      return callback(null, true);
+    }
+    callback(new Error('Origin Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));

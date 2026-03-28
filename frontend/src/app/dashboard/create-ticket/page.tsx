@@ -17,6 +17,15 @@ import { useAuth } from "@/context/AuthContext";
 import { API_URL, fetchWithAuth } from "@/lib/api";
 
 type Category = { id: string; name: string };
+type PendingFile = {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  uploading: boolean;
+  url?: string;
+  error?: string;
+};
 
 export default function CreateTicketPage() {
   const router = useRouter();
@@ -35,7 +44,7 @@ export default function CreateTicketPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
-  const [pendingFiles, setPendingFiles] = useState<any[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
