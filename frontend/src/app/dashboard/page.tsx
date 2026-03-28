@@ -50,11 +50,11 @@ function TicketTable({
     <Table>
       <TableHeader className="bg-muted/40">
         <TableRow>
-          <TableHead className="w-[110px] font-semibold">Ticket ID</TableHead>
-          <TableHead className="font-semibold">Title</TableHead>
-          <TableHead className="font-semibold">Category</TableHead>
-          <TableHead className="font-semibold">Status</TableHead>
-          <TableHead className="font-semibold">Date</TableHead>
+          <TableHead className="w-[110px] font-bold text-[10px] uppercase tracking-wider text-muted-foreground">ID</TableHead>
+          <TableHead className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Title</TableHead>
+          <TableHead className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Category</TableHead>
+          <TableHead className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Status</TableHead>
+          <TableHead className="text-right font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Date</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -80,7 +80,7 @@ function TicketTable({
               <TableCell className="font-mono font-medium text-primary text-xs">
                 {ticket.id.slice(0, 8)}
               </TableCell>
-              <TableCell className="font-medium text-foreground group-hover:text-primary transition-colors">
+              <TableCell className="font-medium text-foreground group-hover:text-primary transition-colors max-w-[150px] sm:max-w-[400px] truncate">
                 {ticket.title}
               </TableCell>
               <TableCell className="text-muted-foreground">

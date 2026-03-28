@@ -166,13 +166,13 @@ export default function TechnicianDashboardPage() {
 
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/40 hover:bg-muted/40">
-              <TableHead className="w-[80px] font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">ID</TableHead>
-              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Issue Title</TableHead>
-              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Requester</TableHead>
-              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Priority</TableHead>
-              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Status</TableHead>
-              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Quick Actions</TableHead>
+            <TableRow className="bg-muted/40 hover:bg-muted/40 transition-colors border-border">
+              <TableHead className="w-[80px] font-bold text-[10px] uppercase tracking-wider text-muted-foreground">ID</TableHead>
+              <TableHead className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground text-left px-4">Title</TableHead>
+              <TableHead className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground text-left px-4">Requester</TableHead>
+              <TableHead className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground text-left px-4">Priority</TableHead>
+              <TableHead className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground text-left px-4">Status</TableHead>
+              <TableHead className="text-right font-bold text-[10px] uppercase tracking-wider text-muted-foreground px-4">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -193,7 +193,7 @@ export default function TechnicianDashboardPage() {
                     {ticket.id.slice(0, 8)}
                   </Link>
                 </TableCell>
-                <TableCell className="font-medium text-foreground text-sm max-w-[250px] truncate">
+                <TableCell className="font-medium text-foreground text-sm max-w-[120px] sm:max-w-[400px] truncate">
                   <Link href={`/dashboard/ticket/${ticket.id}`} className="hover:text-primary transition-colors">
                     {ticket.title}
                   </Link>

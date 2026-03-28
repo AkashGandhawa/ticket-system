@@ -255,14 +255,14 @@ export default function AdminDashboardPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40 border-border">
-              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground w-24">ID</TableHead>
-              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">User</TableHead>
-              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Issue</TableHead>
-              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Category</TableHead>
-              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Priority</TableHead>
-              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Status</TableHead>
-              <TableHead className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Assigned To</TableHead>
-              <TableHead className="text-right font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Actions</TableHead>
+              <TableHead className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground w-24">ID</TableHead>
+              <TableHead className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground">User</TableHead>
+              <TableHead className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Issue</TableHead>
+              <TableHead className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Category</TableHead>
+              <TableHead className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Priority</TableHead>
+              <TableHead className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Status</TableHead>
+              <TableHead className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Assigned To</TableHead>
+              <TableHead className="text-right font-bold text-[10px] uppercase tracking-wider text-muted-foreground px-4">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -298,7 +298,7 @@ export default function AdminDashboardPage() {
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="font-medium text-foreground text-sm max-w-[250px] truncate">
+                  <TableCell className="font-medium text-foreground text-sm max-w-[120px] sm:max-w-[400px] truncate">
                     <Link href={`/dashboard/ticket/${ticket.id}`} className="hover:text-primary transition-colors">
                       {ticket.title}
                     </Link>
