@@ -24,13 +24,18 @@ const port = process.env.PORT || 5000;
 // Initialize Socket.io
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    methods: ['GET', 'POST'],
+    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL : true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true
   },
 });
 
 // Middleware
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000' }));
+// Allow all origins when testing or specifically process.env.FRONTEND_URL
+app.use(cors({ 
+  origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL : true,
+  credentials: true 
+}));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
