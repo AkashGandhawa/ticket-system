@@ -38,7 +38,10 @@ router.post('/', authenticate, (req: AuthRequest, res: Response, next) => {
     }
 
     console.log(`[Upload] File saved: ${req.file.filename}`);
-    const fileUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+    
+    // Support BACKEND_URL from env, otherwise fallback to request host
+    const baseUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
+    const fileUrl = `${baseUrl.replace(/\/$/, '')}/uploads/${req.file.filename}`;
     
     res.json({
       id: req.file.filename,

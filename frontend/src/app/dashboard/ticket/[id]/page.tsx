@@ -20,6 +20,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
+import { FilePreviewModal } from "@/components/FilePreviewModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -164,19 +165,23 @@ function FileUploadPreview({
 
 // ─── Message Attachments ───────────────────────────────────────────────────────
 
-function MessageAttachments({ files }: { files: UploadedFile[] }) {
+function MessageAttachments({ 
+  files, 
+  onPreview 
+}: { 
+  files: UploadedFile[]; 
+  onPreview: (file: UploadedFile) => void;
+}) {
   return (
     <div className="flex flex-wrap gap-2 mt-2">
       {files.map((file) => {
         const Icon = getFileIcon(file.type);
         const isImage = file.type.startsWith("image/");
         return (
-          <a
+          <div
             key={file.id}
-            href={file.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 bg-white/20 dark:bg-black/20 rounded-xl px-3 py-2 hover:bg-white/30 transition-colors max-w-[180px]"
+            onClick={() => onPreview(file)}
+            className="flex items-center gap-2 bg-white/20 dark:bg-black/20 rounded-xl px-3 py-2 hover:bg-white/30 transition-colors max-w-[180px] cursor-pointer"
           >
             {isImage ? (
               <img src={file.url} alt={file.name} className="w-6 h-6 rounded object-cover shrink-0" />
@@ -184,7 +189,7 @@ function MessageAttachments({ files }: { files: UploadedFile[] }) {
               <Icon className="w-4 h-4 shrink-0" />
             )}
             <span className="text-xs truncate">{file.name}</span>
-          </a>
+          </div>
         );
       })}
     </div>
@@ -239,6 +244,7 @@ export default function TicketDetailsPage() {
 
   // File handling state
   const [pendingFiles, setPendingFiles] = useState<UploadedFile[]>([]);
+  const [previewFile, setPreviewFile] = useState<UploadedFile | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -514,7 +520,7 @@ export default function TicketDetailsPage() {
                 {ticket.attachments && ticket.attachments.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700/50">
                     <p className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-tight">Initial Attachments</p>
-                    <MessageAttachments files={ticket.attachments} />
+                    <MessageAttachments files={ticket.attachments} onPreview={(f) => setPreviewFile(f)} />
                   </div>
                 )}
               </div>
@@ -590,7 +596,10 @@ export default function TicketDetailsPage() {
                       )}
 
                       {msg.attachments && msg.attachments.length > 0 && (
-                        <MessageAttachments files={msg.attachments} />
+                        <MessageAttachments 
+                          files={msg.attachments} 
+                          onPreview={(f) => setPreviewFile(f)} 
+                        />
                       )}
                     </div>
                   </div>
@@ -713,6 +722,11 @@ export default function TicketDetailsPage() {
           </div>
         </div>
       </div>
+      <FilePreviewModal
+        file={previewFile}
+        isOpen={!!previewFile}
+        onClose={() => setPreviewFile(null)}
+      />
     </div>
   );
 }

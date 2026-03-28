@@ -13,6 +13,7 @@ import messageRoutes from './routes/messages';
 import uploadRoutes from './routes/uploads';
 import notificationRoutes from './routes/notifications';
 import path from 'path';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -58,7 +59,11 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+const uploadsDir = path.join(process.cwd(), 'public/uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+app.use('/uploads', express.static(uploadsDir));
 
 // Routes
 app.use('/api/auth', authRoutes);
