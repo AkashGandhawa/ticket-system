@@ -1,6 +1,6 @@
 "use client";
  
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, MonitorCheck, Mail, Lock, User, GraduationCap } from "lucide-react";
@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useAuth } from "@/context/AuthContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { API_URL } from "@/lib/api";
+import { cn } from "@/lib/utils";
  
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -23,12 +24,23 @@ export default function RegisterPage() {
   });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
   const { login } = useAuth();
   const router = useRouter();
  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [e.target.id]: e.target.value }));
   };
+
+  useEffect(() => {
+    let s = 0;
+    const pwd = formData.password;
+    if (pwd.length > 7) s++;
+    if (/[A-Z]/.test(pwd)) s++;
+    if (/[0-9]/.test(pwd)) s++;
+    if (/[^A-Za-z0-9]/.test(pwd)) s++;
+    setPasswordStrength(s);
+  }, [formData.password]);
  
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,7 +138,7 @@ export default function RegisterPage() {
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input 
                     id="name" 
                     placeholder="John Doe" 
@@ -141,7 +153,7 @@ export default function RegisterPage() {
               <div className="space-y-2">
                 <Label htmlFor="studentId">Student ID</Label>
                 <div className="relative">
-                  <GraduationCap className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                  <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input 
                     id="studentId" 
                     placeholder="123456A" 
@@ -156,7 +168,7 @@ export default function RegisterPage() {
               <div className="space-y-2">
                 <Label htmlFor="email">University Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input 
                     id="email" 
                     placeholder="jdoe.12@uom.lk" 
@@ -171,25 +183,44 @@ export default function RegisterPage() {
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input 
                     id="password" 
                     type="password" 
+                    placeholder="••••••••"
                     className="pl-10 h-11"
                     value={formData.password}
                     onChange={handleChange}
                     required
                   />
                 </div>
+                {/* Strength Bar */}
+                <div className="flex gap-1 h-1.5 mt-2">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div 
+                      key={i} 
+                      className={cn(
+                        "flex-1 rounded-full transition-colors",
+                        passwordStrength >= i 
+                          ? (passwordStrength <= 2 ? "bg-red-500" : passwordStrength === 3 ? "bg-orange-500" : "bg-green-500")
+                          : "bg-muted"
+                      )}
+                    />
+                  ))}
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Use at least 8 characters, one uppercase, one number, and one symbol.
+                </p>
               </div>
  
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input 
                     id="confirmPassword" 
                     type="password" 
+                    placeholder="••••••••"
                     className="pl-10 h-11"
                     value={formData.confirmPassword}
                     onChange={handleChange}

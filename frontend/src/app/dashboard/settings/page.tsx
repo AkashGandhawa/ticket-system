@@ -31,6 +31,7 @@ export default function SettingsPage() {
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [passwordStrength, setPasswordStrength] = useState(0);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
 
   // Sync with user data when it loads
@@ -44,6 +45,15 @@ export default function SettingsPage() {
       });
     }
   }, [user]);
+
+  useEffect(() => {
+    let s = 0;
+    if (newPassword.length > 7) s++;
+    if (/[A-Z]/.test(newPassword)) s++;
+    if (/[0-9]/.test(newPassword)) s++;
+    if (/[^A-Za-z0-9]/.test(newPassword)) s++;
+    setPasswordStrength(s);
+  }, [newPassword]);
 
   const handleNotificationChange = async (type: 'tickets' | 'system') => {
     if (!user) return;
@@ -246,6 +256,23 @@ export default function SettingsPage() {
                         className="h-10 rounded-xl bg-muted/30 border-border"
                         placeholder="••••••••"
                       />
+                      {/* Strength Bar */}
+                      <div className="flex gap-1 h-1.5 mt-2">
+                        {[1, 2, 3, 4].map((i) => (
+                          <div 
+                            key={i} 
+                            className={cn(
+                              "flex-1 rounded-full transition-colors",
+                              passwordStrength >= i 
+                                ? (passwordStrength <= 2 ? "bg-red-500" : passwordStrength === 3 ? "bg-orange-500" : "bg-green-500")
+                                : "bg-muted"
+                            )}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        Use at least 8 characters, one uppercase, one number, and one symbol.
+                      </p>
                     </div>
                   </div>
                   <Button 

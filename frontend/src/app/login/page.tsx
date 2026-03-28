@@ -84,15 +84,17 @@ export default function LoginPage() {
         <Card className="shadow-xl border-border">
           <CardHeader className="space-y-1 pb-6">
             <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
-            <CardDescription className="text-center">
-              Enter your email and password to access your account
-            </CardDescription>
+            
           </CardHeader>
           <CardContent className="space-y-4">
             {/* SSO Option */}
-            <Button variant="outline" className="w-full h-12 text-base font-medium border-border bg-muted/40 hover:bg-muted/70 hover:text-foreground transition-colors">
-              <Building className="mr-2 h-5 w-5 text-muted-foreground" />
-              Continue with University SSO
+            <Button 
+              disabled 
+              variant="outline" 
+              className="w-full h-12 text-base font-medium border-border bg-muted/20 opacity-50 cursor-not-allowed group"
+            >
+              <Building className="mr-2 h-5 w-5 text-muted-foreground transition-colors group-hover:text-muted-foreground" />
+              University SSO (Coming Soon)
             </Button>
             
             <div className="relative">
@@ -108,7 +110,7 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <Label htmlFor="email">Email or Student ID</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input 
                     id="email" 
                     type="text" 
@@ -128,10 +130,11 @@ export default function LoginPage() {
                   </Link>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input 
                     id="password" 
                     type="password" 
+                    placeholder="••••••••"
                     className="pl-10 h-12"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -145,9 +148,6 @@ export default function LoginPage() {
             </form>
           </CardContent>
           <CardFooter className="flex flex-col border-t p-6 bg-muted/30 rounded-b-lg">
-            <p className="text-xs text-center text-muted-foreground">
-              Your role (Student, Technician, Admin) will be automatically detected upon login.
-            </p>
             <p className="text-sm text-center mt-4">
               Don't have an account? <Link href="/register" className="text-primary font-bold hover:underline">Register now</Link>
             </p>
