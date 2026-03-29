@@ -372,7 +372,7 @@ export default function AdminDashboardPage() {
 
           <div className="space-y-4 py-2">
             <Select value={selectedTechId} onValueChange={(val) => setSelectedTechId(val || "")}>
-              <SelectTrigger className="h-11">
+              <SelectTrigger className="h-11 w-full">
                 <div className="flex flex-1 text-left line-clamp-1">
                   {selectedTechId 
                     ? technicians.find(t => t.id === selectedTechId)?.name 

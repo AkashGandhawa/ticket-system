@@ -44,6 +44,41 @@ router.get('/all', authenticate, authorize(['ADMIN', 'TECHNICIAN']), async (req:
   }
 });
 
+// Get a single ticket by ID
+router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const ticketId = id as string;
+
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: ticketId },
+      include: {
+        category: true,
+        author: { select: { id: true, name: true, email: true } },
+        assignedTo: { select: { id: true, name: true } },
+        attachments: true,
+      }
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    // Authorization: Admin, Author, or Assigned Tech
+    const isAdmin = req.user!.role === 'ADMIN';
+    const isAuthor = ticket.authorId === req.user!.id;
+    const isAssigned = ticket.assignedToId === req.user!.id;
+
+    if (!isAdmin && !isAuthor && !isAssigned) {
+      return res.status(403).json({ error: 'Access denied to this ticket' });
+    }
+
+    res.json(ticket);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch ticket' });
+  }
+});
+
 // Get tickets assigned to a specific technician
 router.get('/assigned/:id', authenticate, authorize(['ADMIN', 'TECHNICIAN']), async (req: AuthRequest, res: Response) => {
   try {

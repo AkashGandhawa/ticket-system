@@ -267,13 +267,17 @@ export default function TicketDetailsPage() {
     async function init() {
       try {
         const [ticketRes, messagesRes] = await Promise.all([
-          fetchWithAuth(`${API_URL}/api/tickets`),
+          fetchWithAuth(`${API_URL}/api/tickets/${ticketId}`),
           fetchWithAuth(`${API_URL}/api/messages/${ticketId}`),
         ]);
-        const [allTickets, msgs] = await Promise.all([ticketRes.json(), messagesRes.json()]);
-        const found = allTickets.find((t: TicketInfo) => t.id === ticketId);
-        setTicket(found || null);
-        setMessages(msgs);
+        
+        if (ticketRes.ok && messagesRes.ok) {
+          const [t, msgs] = await Promise.all([ticketRes.json(), messagesRes.json()]);
+          setTicket(t);
+          setMessages(msgs);
+        } else {
+          setTicket(null);
+        }
       } catch (err) {
         console.error("Failed to load ticket data", err);
       } finally {
@@ -430,8 +434,8 @@ export default function TicketDetailsPage() {
           <AlertCircle className="w-8 h-8 text-slate-400" />
         </div>
         <h2 className="text-xl font-bold text-slate-700 dark:text-slate-200">Ticket not found</h2>
-        <Link href="/dashboard">
-          <Button variant="outline" className="mt-2">← Back to Dashboard</Button>
+        <Link href={user?.role === 'ADMIN' ? "/dashboard/admin" : user?.role === 'TECHNICIAN' ? "/dashboard/technician" : "/dashboard"}>
+          <Button variant="outline" className="mt-2 text-foreground font-semibold px-6 border-slate-200 dark:border-slate-700">← Back to Dashboard</Button>
         </Link>
       </div>
     );
@@ -445,9 +449,9 @@ export default function TicketDetailsPage() {
       {/* ── Top Bar ── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-start gap-3 flex-1 min-w-[200px]">
-          <Link href="/dashboard/admin" className="mt-1">
+          <Link href={user?.role === 'ADMIN' ? "/dashboard/admin" : user?.role === 'TECHNICIAN' ? "/dashboard/technician" : "/dashboard"} className="mt-1">
             <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl border-slate-200 dark:border-slate-500 shrink-0 cursor-pointer">
-              <ArrowLeft className="h-4 w-4 text-slate-200" />
+              <ArrowLeft className="h-4 w-4 text-slate-400" />
             </Button>
           </Link>
           <div>

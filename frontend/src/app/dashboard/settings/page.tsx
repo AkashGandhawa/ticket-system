@@ -60,10 +60,10 @@ export default function SettingsPage() {
 
   const handleNotificationChange = async (type: 'tickets' | 'system') => {
     if (!user) return;
-    
+
     const nextState = { ...notifications, [type]: !notifications[type] };
     setNotifications(nextState); // Optimistic UI update
-    
+
     try {
       const res = await fetchWithAuth(`${API_URL}/api/users/${user.id}/notifications`, {
         method: "PUT",
@@ -72,14 +72,14 @@ export default function SettingsPage() {
           notifySystem: nextState.system
         })
       });
-      
+
       if (res.ok) {
         const data = await res.json();
         updateUser({ notifyTickets: data.notifyTickets, notifySystem: data.notifySystem });
       } else {
         setNotifications(notifications); // Revert on error
       }
-    } catch(e) {
+    } catch (e) {
       console.error(e);
       setNotifications(notifications); // Revert on error
     }
@@ -247,7 +247,7 @@ export default function SettingsPage() {
                   <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} disabled={isUploading} />
                 </label>
                 {user?.profilePicture && (
-                  <button 
+                  <button
                     onClick={handleRemovePhoto}
                     className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm hover:bg-destructive/90 transition-all hover:scale-110"
                     title="Remove Photo"
@@ -313,15 +313,15 @@ export default function SettingsPage() {
                   <p className="font-bold text-foreground">Login Password</p>
                   <p className="text-sm text-muted-foreground">Change your account password regularly to keep it secure.</p>
                 </div>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="rounded-xl px-6"
                   onClick={() => setIsUpdatingPassword(!isUpdatingPassword)}
                 >
                   {isUpdatingPassword ? "Cancel" : "Update Password"}
                 </Button>
               </div>
-              
+
               {isUpdatingPassword && (
                 <div className="pt-4 border-t border-border/50 space-y-4 animate-in fade-in slide-in-from-top-2">
                   <div className="grid sm:grid-cols-2 gap-4">
@@ -347,11 +347,11 @@ export default function SettingsPage() {
                       {/* Strength Bar */}
                       <div className="flex gap-1 h-1.5 mt-2">
                         {[1, 2, 3, 4].map((i) => (
-                          <div 
-                            key={i} 
+                          <div
+                            key={i}
                             className={cn(
                               "flex-1 rounded-full transition-colors",
-                              passwordStrength >= i 
+                              passwordStrength >= i
                                 ? (passwordStrength <= 2 ? "bg-red-500" : passwordStrength === 3 ? "bg-orange-500" : "bg-green-500")
                                 : "bg-muted"
                             )}
@@ -363,8 +363,8 @@ export default function SettingsPage() {
                       </p>
                     </div>
                   </div>
-                  <Button 
-                    onClick={handlePasswordUpdate} 
+                  <Button
+                    onClick={handlePasswordUpdate}
                     disabled={isSavingPassword || !currentPassword || !newPassword}
                     className="rounded-xl"
                   >
@@ -381,7 +381,7 @@ export default function SettingsPage() {
               </div>
               <Button disabled variant="outline" className="gap-2 rounded-xl px-6 opacity-60">
                 <Smartphone className="h-4 w-4" />
-                Enable 2FA (Coming Soon)
+                2FA (Coming Soon)
               </Button>
             </div>
           </div>
@@ -449,8 +449,8 @@ export default function SettingsPage() {
                 <p className="font-bold text-red-600 dark:text-red-400">Delete Account</p>
                 <p className="text-sm text-muted-foreground">Permanently remove your account and all associated data.</p>
               </div>
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 className="rounded-xl px-6 bg-red-600 hover:bg-red-700"
                 onClick={handleDeleteAccount}
               >
