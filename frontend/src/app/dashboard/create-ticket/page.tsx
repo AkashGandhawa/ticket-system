@@ -46,6 +46,7 @@ export default function CreateTicketPage() {
   const [error, setError] = useState("");
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadControllersRef = useRef<Map<string, AbortController>>(new Map());
 
   useEffect(() => {
     fetchWithAuth(`${API_URL}/api/categories`)
@@ -67,6 +68,9 @@ export default function CreateTicketPage() {
 
     for (const f of files) {
       const tempId = crypto.randomUUID();
+      const controller = new AbortController();
+      uploadControllersRef.current.set(tempId, controller);
+
       const newFile = {
         id: tempId,
         name: f.name,
@@ -84,6 +88,7 @@ export default function CreateTicketPage() {
         const res = await fetchWithAuth(`${API_URL}/api/uploads`, {
           method: "POST",
           body: formData,
+          signal: controller.signal
         });
 
         if (!res.ok) {
@@ -95,10 +100,16 @@ export default function CreateTicketPage() {
         setPendingFiles((prev) =>
           prev.map((p) => p.id === tempId ? { ...data, uploading: false } : p)
         );
-      } catch (err) {
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          console.log(`Upload ${tempId} cancelled`);
+          continue;
+        }
         setPendingFiles((prev) =>
           prev.map((p) => p.id === tempId ? { ...p, uploading: false, error: "Failed" } : p)
         );
+      } finally {
+        uploadControllersRef.current.delete(tempId);
       }
     }
     // Clear input
@@ -106,6 +117,11 @@ export default function CreateTicketPage() {
   };
 
   const removeFile = (id: string) => {
+    const controller = uploadControllersRef.current.get(id);
+    if (controller) {
+      controller.abort();
+      uploadControllersRef.current.delete(id);
+    }
     setPendingFiles((prev) => prev.filter((f) => f.id !== id));
   };
 

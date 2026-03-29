@@ -146,18 +146,36 @@ function FileUploadPreview({
               <p className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate">{file.name}</p>
               <p className="text-[10px] text-slate-400">{formatBytes(file.size)}</p>
             </div>
-            {file.uploading ? (
-              <Loader2 className="w-3 h-3 text-blue-500 animate-spin shrink-0" />
-            ) : file.error ? (
-              <AlertCircle className="w-3 h-3 text-red-500 shrink-0" />
-            ) : (
-              <button
-                onClick={() => onRemove(file.id)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-slate-400 hover:text-red-500"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
+            <div className="flex items-center justify-center shrink-0">
+              {file.uploading ? (
+                <div className="relative h-4 w-4">
+                  <Loader2 className="h-4 w-4 text-blue-500 animate-spin absolute inset-0 group-hover:opacity-0 transition-opacity" />
+                  <button
+                    onClick={() => onRemove(file.id)}
+                    className="h-4 w-4 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity absolute inset-0 flex items-center justify-center"
+                    title="Cancel upload"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : file.error ? (
+                <button
+                  onClick={() => onRemove(file.id)}
+                  className="text-red-500 hover:text-red-600 transition-colors"
+                  title="Remove"
+                >
+                  <AlertCircle className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => onRemove(file.id)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-slate-400 hover:text-red-500"
+                  title="Remove file"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
         );
       })}
@@ -254,6 +272,7 @@ export default function TicketDetailsPage() {
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadControllersRef = useRef<Map<string, AbortController>>(new Map());
 
   // Auto-scroll
   useEffect(() => {
@@ -314,6 +333,9 @@ export default function TicketDetailsPage() {
   const handleFiles = useCallback((files: File[]) => {
     files.forEach(async (f) => {
       const tempId = crypto.randomUUID();
+      const controller = new AbortController();
+      uploadControllersRef.current.set(tempId, controller);
+
       const newFile: UploadedFile = {
         id: tempId,
         name: f.name,
@@ -332,6 +354,7 @@ export default function TicketDetailsPage() {
         const res = await fetchWithAuth(`${API_URL}/api/uploads`, {
           method: "POST",
           body: formData,
+          signal: controller.signal
         });
 
         if (!res.ok) {
@@ -344,16 +367,28 @@ export default function TicketDetailsPage() {
         setPendingFiles((prev) =>
           prev.map((p) => p.id === tempId ? { ...data, uploading: false } : p)
         );
-      } catch (err) {
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          console.log(`Upload ${tempId} cancelled`);
+          return;
+        }
         console.error("Upload error:", err);
         setPendingFiles((prev) =>
           prev.map((p) => p.id === tempId ? { ...p, uploading: false, error: "Failed" } : p)
         );
+      } finally {
+        uploadControllersRef.current.delete(tempId);
       }
     });
   }, []);
 
   const removeFile = (id: string) => {
+    const controller = uploadControllersRef.current.get(id);
+    if (controller) {
+      controller.abort();
+      uploadControllersRef.current.delete(id);
+    }
+
     setPendingFiles((prev) => {
       const file = prev.find((f) => f.id === id);
       if (file?.url.startsWith("blob:")) URL.revokeObjectURL(file.url);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { API_URL, fetchWithAuth } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ export default function SettingsPage() {
     system: user?.notifySystem ?? false
   });
   const [isUploading, setIsUploading] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Password state
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
@@ -133,22 +134,36 @@ export default function SettingsPage() {
     }
   };
 
+  const handleCancelUpload = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsUploading(false);
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
     setIsUploading(true);
+    
+    // Initialize AbortController for cancellation
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      // 1. Upload file
+      // 1. Upload file with abort signal
       const uploadRes = await fetch(`${API_URL}/api/uploads`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("helpdesk_token")}`
         },
-        body: formData
+        body: formData,
+        signal: controller.signal
       });
 
       if (!uploadRes.ok) throw new Error("Upload failed");
@@ -165,11 +180,16 @@ export default function SettingsPage() {
       if (userRes.ok) {
         updateUser({ profilePicture: photoUrl });
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log("Upload cancelled by user");
+        return;
+      }
       console.error(error);
       alert("Failed to upload profile picture.");
     } finally {
       setIsUploading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -242,12 +262,22 @@ export default function SettingsPage() {
                     </div>
                   )}
                 </div>
-                <label className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-card border border-border flex items-center justify-center cursor-pointer shadow-sm hover:text-primary transition-colors group-hover:scale-110">
-                  <Camera className="h-4 w-4" />
-                  <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} disabled={isUploading} />
-                </label>
-                {user?.profilePicture && (
-                  <button
+                {isUploading ? (
+                   <button 
+                    onClick={handleCancelUpload}
+                    className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-destructive text-destructive-foreground border border-destructive/20 flex items-center justify-center shadow-sm hover:bg-destructive/90 transition-all scale-110"
+                    title="Cancel Upload"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <label className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-card border border-border flex items-center justify-center cursor-pointer shadow-sm hover:text-primary transition-colors group-hover:scale-110">
+                    <Camera className="h-4 w-4" />
+                    <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} disabled={isUploading} />
+                  </label>
+                )}
+                {user?.profilePicture && !isUploading && (
+                  <button 
                     onClick={handleRemovePhoto}
                     className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm hover:bg-destructive/90 transition-all hover:scale-110"
                     title="Remove Photo"
