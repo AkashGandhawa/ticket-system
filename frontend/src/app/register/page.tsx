@@ -98,8 +98,8 @@ export default function RegisterPage() {
         throw new Error(data.error || "Registration failed");
       }
  
-      // Log in the user automatically
-      login(data.token, data.user);
+      // Redirect to login with success message
+      router.push("/login?registered=true");
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.");
       setIsLoading(false);

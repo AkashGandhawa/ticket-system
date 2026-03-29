@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, MonitorCheck, Mail, Lock, Building } from "lucide-react";
+import { ArrowLeft, MonitorCheck, Mail, Lock, Building, CheckCircle2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +20,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth(); // Import Context
+  const searchParams = useSearchParams();
+  const isRegistered = searchParams.get("registered") === "true";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,8 +34,11 @@ export default function LoginPage() {
       return;
     }
 
-    if (!email.includes("@")) {
-      setError("Please enter a valid email address.");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const studentIdRegex = /^\d{6}[A-Z]$/;
+
+    if (!emailRegex.test(email) && !studentIdRegex.test(email)) {
+      setError("Please enter a valid university email or Student ID (e.g., 123456A).");
       setIsLoading(false);
       return;
     }
@@ -96,6 +103,15 @@ export default function LoginPage() {
               </Alert>
             )}
             
+            {isRegistered && !error && (
+              <Alert className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400">
+                <AlertDescription className="flex items-center gap-2 font-medium">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Registration successful! Please sign in.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* SSO Option */}
             <Button 
               disabled 

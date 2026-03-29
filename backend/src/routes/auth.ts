@@ -15,9 +15,14 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    // Query Postgres database for user
-    const user = await prisma.user.findUnique({
-      where: { email },
+    // Query Postgres database for user by email or Student ID
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email },
+          { studentId: email } // 'email' variable holds the input value
+        ]
+      },
       select: {
         id: true,
         email: true,
@@ -31,13 +36,13 @@ router.post('/login', async (req, res) => {
     });
 
     if (!user) {
-       return res.status(401).json({ error: 'Invalid email or password' });
+       return res.status(401).json({ error: 'Invalid email/Student ID or password' });
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password);
     
     if (!isValidPassword) {
-       return res.status(401).json({ error: 'Invalid email or password' });
+       return res.status(401).json({ error: 'Invalid email/Student ID or password' });
     }
 
     // Mock session token (Use JWT for production)
