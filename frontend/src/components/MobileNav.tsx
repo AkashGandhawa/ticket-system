@@ -78,7 +78,7 @@ const MobileNav = () => {
         <div className="flex h-16 items-center justify-between px-6 border-b border-border shrink-0">
           <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
             <div className="bg-primary p-1.5 rounded-md">
-              <MonitorCheck className="h-5 w-5 text-primary dark:text-blue-400-foreground" />
+              <MonitorCheck className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="font-bold text-lg text-foreground tracking-tight">
               UniTech Assist
@@ -103,13 +103,13 @@ const MobileNav = () => {
                 className={cn(
                   "flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all",
                   isActive 
-                    ? "bg-primary text-primary dark:text-blue-400-foreground shadow-lg shadow-primary/20" 
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
                 <item.icon className={cn(
                   "h-5 w-5",
-                  isActive ? "text-primary dark:text-blue-400-foreground" : "text-muted-foreground"
+                  isActive ? "text-primary-foreground" : "text-muted-foreground"
                 )} />
                 {item.name}
               </Link>

@@ -80,7 +80,7 @@ const Sidebar = () => {
       <div className="flex h-16 items-center px-6 border-b border-border">
         <Link href="/dashboard" className="flex items-center gap-2">
           <div className="bg-primary p-1.5 rounded-md shadow-sm">
-            <MonitorCheck className="h-5 w-5 text-primary dark:text-blue-400-foreground" />
+            <MonitorCheck className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="font-bold text-lg text-foreground tracking-tight">
             UniTech Assist
@@ -98,13 +98,13 @@ const Sidebar = () => {
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all group",
                 isActive 
-                  ? "bg-primary text-primary dark:text-blue-400-foreground shadow-md shadow-primary/20" 
+                  ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" 
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >
               <item.icon className={cn(
                 "h-4 w-4 transition-colors",
-                isActive ? "text-primary dark:text-blue-400-foreground" : "text-muted-foreground group-hover:text-primary dark:group-hover:text-blue-400"
+                isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-primary dark:group-hover:text-blue-400"
               )} />
               <span className="flex-1">{item.name}</span>
               {isActive && <ChevronRight className="h-3 w-3 opacity-50" />}

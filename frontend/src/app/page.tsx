@@ -62,7 +62,7 @@ export default function LandingPage() {
         <div className="flex items-center gap-2">
           <Link href="#hero" className="flex items-center gap-2">
             <div className="bg-primary p-2 rounded-lg">
-              <MonitorCheck className="h-6 w-6 text-primary dark:text-blue-400-foreground" />
+              <MonitorCheck className="h-6 w-6 text-primary-foreground" />
             </div>
             <span className="font-bold text-xl text-foreground tracking-tight">UniTech Assist</span>
           </Link>
@@ -214,7 +214,7 @@ export default function LandingPage() {
               {/* Step 1 */}
               <div className="group flex flex-col items-center text-center space-y-4 relative z-10">
                 <div className="h-20 w-20 rounded-full bg-primary flex items-center justify-center mb-4 ring-8 ring-primary/10 shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
-                  <TicketPlus className="h-9 w-9 text-primary dark:text-blue-400-foreground" />
+                  <TicketPlus className="h-9 w-9 text-primary-foreground" />
                 </div>
                 <h3 className="text-xl font-bold">1. Submit a Ticket</h3>
                 <p className="text-muted-foreground">Easily describe your issue, attach screenshots, and categorize the problem in seconds.</p>
@@ -328,7 +328,7 @@ export default function LandingPage() {
           <div className="flex flex-col items-center gap-4">
             <div className="flex items-center gap-2 opacity-80 mb-2">
               <div className="bg-primary p-1.5 rounded-md">
-                <MonitorCheck className="h-4 w-4 text-primary dark:text-blue-400-foreground" />
+                <MonitorCheck className="h-4 w-4 text-primary-foreground" />
               </div>
               <span className="font-bold text-lg text-foreground tracking-tight">UniTech Assist</span>
             </div>

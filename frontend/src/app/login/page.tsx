@@ -171,7 +171,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center justify-center text-center">
           <div className="bg-primary p-3 rounded-2xl shadow-lg mb-6">
-            <MonitorCheck className="h-10 w-10 text-primary dark:text-blue-400-foreground" />
+            <MonitorCheck className="h-10 w-10 text-primary-foreground" />
           </div>
           <h2 className="text-3xl font-extrabold text-foreground tracking-tight">UniTech Assist</h2>
           <p className="mt-2 text-sm text-muted-foreground">University IT Help Desk: Ticket Manager</p>
