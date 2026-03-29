@@ -34,7 +34,10 @@ export default function LandingPage() {
             setActiveSection(sectionId);
           }
         },
-        { threshold: 0.5 } // Trigger when 50% visible
+        { 
+          threshold: 0.1,
+          rootMargin: "-20% 0px -70% 0px" // Better range for tracking active section
+        }
       );
 
       observer.observe(element);
@@ -84,12 +87,12 @@ export default function LandingPage() {
         <div className="flex items-center gap-4">
           <ThemeToggle />
           <div className="hidden sm:flex gap-4">
-            <Link href="/login">
+            <Link href="/dashboard">
               <Button variant="ghost" className="font-medium text-foreground/80 hover:text-primary">
                 Sign In
               </Button>
             </Link>
-            <Link href="/login">
+            <Link href="/dashboard">
               <Button className="font-medium shadow-md group">
                 Get Support <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
@@ -100,8 +103,12 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <main className="flex-1 flex flex-col items-center">
-        <section id="hero" className="w-full py-20 lg:py-32 flex flex-col items-center justify-center text-center px-4 md:px-6 bg-gradient-to-b from-background to-muted/30 scroll-mt-20">
-          <div className="max-w-4xl space-y-6">
+        <section id="hero" className="w-full py-24 lg:py-40 flex flex-col items-center justify-center text-center px-4 md:px-6 relative overflow-hidden scroll-mt-20">
+          {/* Enhanced Gradient Background */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-background to-muted/20 z-0" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(20,82,218,0.1),transparent)] z-0" />
+          
+          <div className="max-w-4xl space-y-6 relative z-10">
             <div className="inline-block rounded-full bg-primary/10 border border-primary/20 px-4 py-1.5 text-sm font-semibold text-primary mb-4 animate-in fade-in slide-in-from-top-4 duration-500">
               ✨ University IT Help Desk: Ticket Manager
             </div>
@@ -112,7 +119,7 @@ export default function LandingPage() {
               Inquire, track, and resolve technical issues in real-time.<br></br>Experience a more efficient and transparent IT help desk.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-              <Link href="/login">
+              <Link href="/dashboard">
                 <Button size="lg" className="px-8 h-14 text-lg shadow-lg hover:shadow-xl transition-all">
                   Report an Issue
                 </Button>
@@ -201,8 +208,8 @@ export default function LandingPage() {
             </div>
             
             <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto relative">
-              {/* Connector lines (Desktop) */}
-              <div className="hidden md:block absolute top-[90px] left-[25%] right-[25%] h-px bg-gradient-to-r from-primary/20 via-primary/40 to-primary/20" />
+              {/* Connector lines (Desktop) - Adjusted to be behind icons */}
+              <div className="hidden md:block absolute top-[40px] left-[25%] right-[25%] h-px bg-gradient-to-r from-primary/20 via-primary/40 to-primary/20" />
               
               {/* Step 1 */}
               <div className="group flex flex-col items-center text-center space-y-4 relative z-10">
@@ -257,7 +264,7 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Email Us</p>
-                      <p className="text-lg font-semibold">support@univ-it.edu</p>
+                      <a href="mailto:support@univ-it.edu" className="text-lg font-semibold hover:text-primary transition-colors">support@univ-it.edu</a>
                     </div>
                   </div>
                   
@@ -267,7 +274,7 @@ export default function LandingPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Call Help Desk</p>
-                      <p className="text-lg font-semibold">+94 (70) 234-5678</p>
+                      <a href="tel:+94702345678" className="text-lg font-semibold hover:text-primary transition-colors">+94 (70) 234-5678</a>
                     </div>
                   </div>
                   
@@ -304,7 +311,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 
-                <Link href="/login" className="block">
+                <Link href="/dashboard" className="block">
                   <Button className="w-full h-12 rounded-xl shadow-lg hover:shadow-primary/20 transition-all font-bold">
                     Go to Support Portal
                   </Button>
@@ -329,7 +336,7 @@ export default function LandingPage() {
               <Link href="#features" className="text-sm text-muted-foreground hover:text-primary">Features</Link>
               <Link href="#how-it-works" className="text-sm text-muted-foreground hover:text-primary">How it Works</Link>
               <Link href="#contact" className="text-sm text-muted-foreground hover:text-primary">Contact</Link>
-              <Link href="/login" className="text-sm text-muted-foreground hover:text-primary">Login</Link>
+              <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-primary">Login</Link>
             </nav>
             <p className="text-muted-foreground text-sm opacity-60">
               © {new Date().getFullYear()} UniTech Assist. Empowering university IT support.
