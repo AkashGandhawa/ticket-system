@@ -137,9 +137,9 @@ const Sidebar = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56 mb-2" align="end" side="top">
                 <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user?.name ?? "Guest"}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user?.email ?? ""}</p>
+                  <div className="flex flex-col space-y-1 min-w-0">
+                    <p className="text-sm font-medium leading-none truncate" title={user?.name ?? ""}>{user?.name ?? "Guest"}</p>
+                    <p className="text-xs leading-none text-muted-foreground truncate" title={user?.email ?? ""}>{user?.email ?? ""}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />

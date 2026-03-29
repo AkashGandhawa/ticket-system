@@ -286,9 +286,11 @@ export default function SettingsPage() {
                   </button>
                 )}
               </div>
-              <div>
-                <h3 className="font-semibold text-foreground">{user?.name}</h3>
-                <p className="text-sm text-muted-foreground">{user?.email}</p>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-xl text-foreground truncate" title={user?.name ?? ""}>
+                  {user?.name}
+                </h3>
+                <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <p className="text-[10px] uppercase tracking-widest font-bold text-primary dark:text-blue-400">{user?.role} ACCOUNT</p>
                 </div>
