@@ -1,7 +1,7 @@
+import 'dotenv/config';
 import express from 'express';
 import http from 'http';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { Server as SocketIOServer } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
 
@@ -14,8 +14,6 @@ import uploadRoutes from './routes/uploads';
 import notificationRoutes from './routes/notifications';
 import path from 'path';
 import fs from 'fs';
-
-dotenv.config();
 
 const app = express();
 const server = http.createServer(app);  // Wrap Express with http server for Socket.io

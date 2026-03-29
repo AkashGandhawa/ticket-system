@@ -83,11 +83,19 @@ router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   }
 });
 
+import { validateName } from '../utils/validation';
+
 // Update user profile (Self only)
 router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const { name, profilePicture } = req.body;
+
+    // Validate and sanitize name
+    const { isValid, sanitizedName, error } = validateName(name || '');
+    if (name !== undefined && !isValid) {
+      return res.status(400).json({ error });
+    }
 
     const userId = id as string;
 
@@ -97,7 +105,10 @@ router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
 
     const user = await prisma.user.update({
       where: { id: userId },
-      data: { name, profilePicture },
+      data: { 
+        name: sanitizedName || undefined, 
+        profilePicture 
+      },
       select: { id: true, name: true, email: true, role: true, department: true, profilePicture: true }
     });
 

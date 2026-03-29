@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { sendOTP } from '../utils/email';
+import { validateName } from '../utils/validation';
 const router = Router();
 const prisma = new PrismaClient();
 
@@ -72,6 +73,11 @@ router.post('/register', async (req, res) => {
     // Basic validation
     if (!name || !studentId || !email || !password) {
       return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    const { isValid, sanitizedName, error } = validateName(name);
+    if (!isValid) {
+      return res.status(400).json({ error });
     }
     
     if (password.length < 8) {

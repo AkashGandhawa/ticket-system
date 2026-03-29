@@ -85,21 +85,35 @@ export default function SettingsPage() {
       setNotifications(notifications); // Revert on error
     }
   };
-
   const handleSave = async () => {
     if (!user) return;
+    // Client-side sanitization and validation
+    const sanitizedName = name.trim().replace(/\s+/g, ' ');
+    
+    if (sanitizedName.length < 2) {
+      alert("Full name must be at least 2 characters long.");
+      return;
+    }
+
+    if (!/[a-zA-Z]/.test(sanitizedName)) {
+      alert("Full name must contain some letters.");
+      return;
+    }
+
     setIsSaving(true);
     try {
       const res = await fetchWithAuth(`${API_URL}/api/users/${user.id}`, {
         method: "PUT",
-        body: JSON.stringify({ name })
+        body: JSON.stringify({ name: sanitizedName })
       });
       if (res.ok) {
         const data = await res.json();
         updateUser({ name: data.name });
+        setName(data.name); // Sync local state with sanitized version
         alert("Profile updated successfully!");
       } else {
-        alert("Failed to update profile.");
+        const err = await res.json();
+        alert(`Failed: ${err.error || "Update failed"}`);
       }
     } catch (e) {
       console.error(e);
@@ -286,8 +300,8 @@ export default function SettingsPage() {
                   </button>
                 )}
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-xl text-foreground truncate" title={user?.name ?? ""}>
+              <div className="flex-1 min-w-0 pr-4">
+                <h3 className="font-semibold text-xl text-foreground truncate max-w-[200px] sm:max-w-[400px]" title={user?.name ?? ""}>
                   {user?.name}
                 </h3>
                 <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
@@ -303,8 +317,10 @@ export default function SettingsPage() {
                 <div className="relative">
                   <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
+                    id="full-name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    maxLength={40}
                     className="pl-9 h-10 rounded-xl bg-muted/30 border-border focus:ring-primary/20"
                   />
                 </div>
