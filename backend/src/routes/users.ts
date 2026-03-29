@@ -16,6 +16,7 @@ router.get('/', authenticate, authorize(['ADMIN']), async (req: AuthRequest, res
         email: true,
         role: true,
         department: true,
+        profilePicture: true,
       }
     });
     res.json(users);
@@ -31,7 +32,7 @@ router.get('/staff', authenticate, authorize(['ADMIN', 'TECHNICIAN']), async (re
       where: {
         role: { in: ['ADMIN', 'TECHNICIAN'] }
       },
-      select: { id: true, name: true, email: true, department: true, role: true }
+      select: { id: true, name: true, email: true, department: true, role: true, profilePicture: true }
     });
     res.json(users);
   } catch (error) {
@@ -47,7 +48,7 @@ router.get('/role/:role', authenticate, authorize(['ADMIN', 'TECHNICIAN']), asyn
 
     const users = await prisma.user.findMany({
       where: { role: uppercaseRole },
-      select: { id: true, name: true, email: true, department: true }
+      select: { id: true, name: true, email: true, department: true, profilePicture: true }
     });
 
     res.json(users);
@@ -69,7 +70,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, name: true, email: true, role: true, department: true }
+      select: { id: true, name: true, email: true, role: true, department: true, profilePicture: true }
     });
 
     if (!user) {
@@ -86,7 +87,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res: Response) => {
 router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { name } = req.body;
+    const { name, profilePicture } = req.body;
 
     const userId = id as string;
 
@@ -96,8 +97,8 @@ router.put('/:id', authenticate, async (req: AuthRequest, res: Response) => {
 
     const user = await prisma.user.update({
       where: { id: userId },
-      data: { name },
-      select: { id: true, name: true, email: true, role: true, department: true }
+      data: { name, profilePicture },
+      select: { id: true, name: true, email: true, role: true, department: true, profilePicture: true }
     });
 
     res.json(user);

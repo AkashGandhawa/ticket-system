@@ -12,6 +12,7 @@ export type User = {
   department?: string | null;
   notifyTickets?: boolean;
   notifySystem?: boolean;
+  profilePicture?: string | null;
 };
 
 type AuthContextType = {

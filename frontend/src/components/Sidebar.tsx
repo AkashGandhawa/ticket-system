@@ -116,10 +116,14 @@ const Sidebar = () => {
       <div className="p-4 border-t border-border mt-auto">
         <div className="bg-muted/40 rounded-xl p-2 flex items-center gap-2">
             <Link href="/dashboard/settings" className="flex-1 flex items-center gap-3 p-1 rounded-lg hover:bg-muted transition-colors text-left outline-none cursor-pointer">
-              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold shrink-0 border border-primary/10">
-                {user?.name?.[0].toUpperCase() ?? "?"}
+              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold shrink-0 border border-primary/10 overflow-hidden">
+                {user?.profilePicture ? (
+                  <img src={user.profilePicture} alt={user.name} className="h-full w-full object-cover" />
+                ) : (
+                  user?.name?.[0].toUpperCase() ?? "?"
+                )}
               </div>
-              <div className="flex-1 overflow-hidden">
+              <div className="flex-1 min-w-0 overflow-hidden">
                 <p className="text-xs font-semibold text-foreground truncate">{user?.name}</p>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">{user?.role}</p>
               </div>

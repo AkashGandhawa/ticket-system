@@ -13,7 +13,9 @@ import {
   Smartphone,
   CheckCircle2,
   Loader2,
-  Trash2
+  Trash2,
+  Camera,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +28,7 @@ export default function SettingsPage() {
     tickets: user?.notifyTickets ?? true,
     system: user?.notifySystem ?? false
   });
+  const [isUploading, setIsUploading] = useState(false);
 
   // Password state
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
@@ -130,6 +133,65 @@ export default function SettingsPage() {
     }
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      // 1. Upload file
+      const uploadRes = await fetch(`${API_URL}/api/uploads`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("helpdesk_token")}`
+        },
+        body: formData
+      });
+
+      if (!uploadRes.ok) throw new Error("Upload failed");
+
+      const uploadData = await uploadRes.json();
+      const photoUrl = uploadData.url;
+
+      // 2. Update user profile with photo URL
+      const userRes = await fetchWithAuth(`${API_URL}/api/users/${user.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ profilePicture: photoUrl })
+      });
+
+      if (userRes.ok) {
+        updateUser({ profilePicture: photoUrl });
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to upload profile picture.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    if (!user) return;
+    setIsUploading(true);
+    try {
+      const res = await fetchWithAuth(`${API_URL}/api/users/${user.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ profilePicture: null })
+      });
+
+      if (res.ok) {
+        updateUser({ profilePicture: null });
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (!user) return;
     if (window.confirm("Are you sure you want to permanently delete your account? This action cannot be undone and will delete all your tickets.")) {
@@ -167,13 +229,39 @@ export default function SettingsPage() {
           </div>
           <div className="p-6 space-y-6">
             <div className="flex items-center gap-6 pb-2">
-              <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold border-2 border-primary/20">
-                {user?.name?.[0].toUpperCase() ?? "?"}
+              <div className="relative group">
+                <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold border-2 border-primary/20 overflow-hidden">
+                  {user?.profilePicture ? (
+                    <img src={user.profilePicture} alt={user.name} className="h-full w-full object-cover" />
+                  ) : (
+                    user?.name?.[0].toUpperCase() ?? "?"
+                  )}
+                  {isUploading && (
+                    <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    </div>
+                  )}
+                </div>
+                <label className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-card border border-border flex items-center justify-center cursor-pointer shadow-sm hover:text-primary transition-colors group-hover:scale-110">
+                  <Camera className="h-4 w-4" />
+                  <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} disabled={isUploading} />
+                </label>
+                {user?.profilePicture && (
+                  <button 
+                    onClick={handleRemovePhoto}
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm hover:bg-destructive/90 transition-all hover:scale-110"
+                    title="Remove Photo"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
               </div>
               <div>
                 <h3 className="font-semibold text-foreground">{user?.name}</h3>
                 <p className="text-sm text-muted-foreground">{user?.email}</p>
-                <p className="text-[10px] uppercase tracking-widest font-bold text-primary mt-1">{user?.role} ACCOUNT</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-primary">{user?.role} ACCOUNT</p>
+                </div>
               </div>
             </div>
 
@@ -291,9 +379,9 @@ export default function SettingsPage() {
                 <p className="font-bold text-foreground">Two-Factor Authentication</p>
                 <p className="text-sm text-muted-foreground">Add an extra layer of security to your account.</p>
               </div>
-              <Button variant="outline" className="gap-2 rounded-xl px-6">
+              <Button disabled variant="outline" className="gap-2 rounded-xl px-6 opacity-60">
                 <Smartphone className="h-4 w-4" />
-                Enable 2FA
+                Enable 2FA (Coming Soon)
               </Button>
             </div>
           </div>
