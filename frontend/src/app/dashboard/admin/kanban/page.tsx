@@ -129,7 +129,7 @@ export default function KanbanBoardPage() {
     });
 
     // Also PATCH the backend to persist the new status
-    fetchWithAuth(`${API_URL}/api/tickets/all${draggableId}`, {
+    fetchWithAuth(`${API_URL}/api/tickets/${draggableId}`, {
       method: "PUT",
       body: JSON.stringify({ status: destination.droppableId }),
     }).catch(console.error);
